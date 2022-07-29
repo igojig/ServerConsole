@@ -9,7 +9,7 @@ public class Prefix {
     public static final String SERVER_MSG_CMD_PREFIX = "/s_msg";
 
     //сисок залогиненных пользователей
-    public static final String SERVER_MSG_CMD_PREFIX_LOGGED_USERS = "/s_msg_users"; // + user1 + user2 +....
+    public static final String SERVER_MSG_CMD_PREFIX_LOGGED_USERS = "/s_msg_users"; //[(+/-)] username  + user1 + user2 +....
 
     public static final String PRIVATE_MSG_CMD_PREFIX = "/p_msg";   // + username + message
 
@@ -24,5 +24,11 @@ public class Prefix {
     public static final String REGISTER_NEW_USER = "/register";  // + login + password + username
     public static final String REGISTER_OK="/register_ok";   // + username
     public static final String REGISTER_ERR="/register_err";   // + error
+
+    public static final String CHANGE_USERNAME_REQUEST="/chg_name_req"; // + New username
+    public static final String CHANGE_USERNAME_OK="/chg_name_ok"; // + New username; + broadcast
+    public static final String CHANGE_USERNAME_ERR="/chg_name_err"; // + error
+    public static final String CHANGE_USERNAME_NEW_LIST="/chg_name_list"; // + user1+user2+.....
+
 
 }

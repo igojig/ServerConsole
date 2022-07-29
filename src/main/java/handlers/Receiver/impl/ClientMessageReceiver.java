@@ -27,6 +27,6 @@ public class ClientMessageReceiver extends Receiver {
 
     private void processClientMessage(String message) throws IOException {
         String[] parts= Receiver.parseMessage(message, 2);
-        mainHandler.broadcastMessage(parts[1]);
+        mainHandler.broadcastMessage(parts[1], true);
     }
 }

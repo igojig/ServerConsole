@@ -17,7 +17,7 @@ abstract public class Receiver {
         return message.split("\\s+", parts);
     }
 
-    static String[] parseMessage(String message) {
+    protected static String[] parseMessage(String message) {
         return message.split("\\s+");
     }
 

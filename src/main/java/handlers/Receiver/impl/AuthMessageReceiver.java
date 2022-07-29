@@ -47,7 +47,8 @@ public class AuthMessageReceiver extends Receiver {
             return false;
         }
 
-        if (mainHandler.isUserOccupied(optionalUsername.get())) {
+        // пользователь уже залогинен в системе
+        if (mainHandler.isAlreadyLogin(optionalUsername.get())) {
             System.out.println("Пользователь: " + optionalUsername.get() + " уже залогинен в системе");
             mainHandler.write(String.format("%s пользователь: %s уже залогинен в системе", AUTH_ERR_CMD_PREFIX, optionalUsername.get()));
             return false;

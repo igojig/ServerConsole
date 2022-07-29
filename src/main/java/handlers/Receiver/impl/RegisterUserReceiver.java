@@ -52,15 +52,21 @@ public class RegisterUserReceiver extends Receiver {
         }
 
         // если Username присутствует в базе данных
-        if (mainHandler.isUserPresent(username)) {
+        if (mainHandler.isUserPresentInDatabase(username)) {
 //            mainHandler.out.writeUTF(REGISTER_ERR + " " + "Пользователь уже зарегистрирован в системе" + " " + username);
             mainHandler.write(String.format("%s пользователь уже зарегистрирован в системе: %s", REGISTER_ERR, username));
             System.out.println("Пользователь уже зарегистрирован в системе" + " " + username);
             return false;
         }
 
-        // все в порядке - регистрируемся
-        mainHandler.addUser(username, login, password);
+
+        if(!mainHandler.addUser(username, login, password)){
+            mainHandler.write(String.format("%s Ошибка записи пользователя в базу данных: username:%s login:%s password:%s", REGISTER_ERR, username, login, password));
+            System.out.printf("Ошибка записи в базу данных. username:%s login:%s password:%s", username, login, password);
+            return false;
+        }
+
+// все в порядке - регистрируемся
         mainHandler.userName = username;
         mainHandler.isLoggedIn = true;
 //        mainHandler.out.writeUTF(String.format("%s %s", REGISTER_OK, username));

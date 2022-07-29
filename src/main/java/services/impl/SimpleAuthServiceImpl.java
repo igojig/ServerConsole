@@ -3,6 +3,9 @@ package services.impl;
 import model.User;
 import services.AuthService;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,23 +25,32 @@ public class SimpleAuthServiceImpl implements AuthService {
         ));
     }
 
+    public SimpleAuthServiceImpl()  {
+
+    }
+
     @Override
     synchronized public Optional<String> getUsernameByLoginAndPassword(String login, String password) {
         return clients.stream().
-                filter(o -> o.login().equalsIgnoreCase(login) && o.password().equalsIgnoreCase(password))
+                filter(o -> o.getLogin().equalsIgnoreCase(login) && o.getPassword().equalsIgnoreCase(password))
                 .findAny()
-                .map(User::userName);
+                .map(User::getUsername);
     }
 
     @Override
-    synchronized public void addUser(String userName, String login, String password) {
-        clients.add(new User(userName, login, password));
+    synchronized public boolean addUser(String userName, String login, String password) {
+        return clients.add(new User(userName, login, password));
     }
 
     @Override
-    synchronized public boolean isUserPresent(String username) {
+    synchronized public boolean isUserPresentInDatabase(String username) {
        return clients.stream()
-                .map(User::userName)
+                .map(User::getUsername)
                 .anyMatch(o->o.equalsIgnoreCase(username));
+    }
+
+    @Override
+    public boolean renameUser(String oldUserName, String newUsername) {
+        return false;
     }
 }
