@@ -27,7 +27,13 @@ public class ClientHandler {
     private final DataInputStream in;
     private final DataOutputStream out;
 
+
+    // Наш будущий объект User
     volatile public String userName;
+    volatile public int id;
+
+
+
     volatile public boolean isLoggedIn = false;
 
     // поток обработки сообшений
@@ -119,10 +125,6 @@ public class ClientHandler {
                     e.printStackTrace();
                 }
             }
-            finally {
-
-            }
-
         });
         handleThread.setDaemon(true);
         handleThread.start();
@@ -231,4 +233,7 @@ public class ClientHandler {
         myServer.sendUpdateUsers();
     }
 
+    public int getUserIdByLoginAndPassword(String login, String password) {
+       return myServer.getAuthService().getUserIdByLoginAndPassword(login, password);
+    }
 }

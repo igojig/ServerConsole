@@ -54,12 +54,19 @@ public class AuthMessageReceiver extends Receiver {
             return false;
         }
 
+
+        int id=mainHandler.getUserIdByLoginAndPassword(login, password);
+        System.out.println("id=" + id);
+
+
         mainHandler.userName = optionalUsername.get();
+        mainHandler.id=id;
+
         mainHandler.isLoggedIn = true;
-        mainHandler.write(String.format("%s %s", AUTH_OK_CMD_PREFIX, optionalUsername.get()));
+        mainHandler.write(String.format("%s %s %s", AUTH_OK_CMD_PREFIX, optionalUsername.get(), id));
 //        mainHandler.myServer.subscribe(mainHandler);
         mainHandler.subscribe();
-        System.out.println("Пользователь: " + optionalUsername.get() + " подключился");
+        System.out.println("Пользователь: " + optionalUsername.get() + " подключился. ID=" + id);
         return true;
 
     }

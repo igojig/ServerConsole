@@ -33,8 +33,8 @@ public class JDBCRepository {
             getUsernameByLoginAndPasswordStatement = connection.prepareStatement("SELECT username FROM users WHERE login=? AND password=?");
             addUserStatement = connection.prepareStatement("INSERT INTO users (login, password, username) VALUES (?,?,?)");
             isUserPresentStatement = connection.prepareStatement("SELECT count(username) as qw FROM users where username=?");
-            chgUserNameStatement=connection.prepareStatement("UPDATE users SET username=? where username=?");
-            getUserIdByLoginAndPassword=connection.prepareStatement("SELECT id FROM users WHERE login=? AND password=?");
+            chgUserNameStatement = connection.prepareStatement("UPDATE users SET username=? where username=?");
+            getUserIdByLoginAndPassword = connection.prepareStatement("SELECT id FROM users WHERE login=? AND password=?");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -103,11 +103,11 @@ public class JDBCRepository {
     // присутствует ли пользователь в базе данных
 
     public boolean isUserPresentInDatabase(String username) {
-        int result=0;
+        int result = 0;
         try {
             isUserPresentStatement.setString(1, username);
             ResultSet resultSet = isUserPresentStatement.executeQuery();
-            if(resultSet.next()){
+            if (resultSet.next()) {
                 result = resultSet.getInt(1);
             }
             return result > 0;
@@ -117,15 +117,31 @@ public class JDBCRepository {
         }
     }
 
-    synchronized public boolean renameUser(String oldUsername, String newUsername){
+    synchronized public boolean renameUser(String oldUsername, String newUsername) {
         try {
             chgUserNameStatement.setString(1, newUsername);
             chgUserNameStatement.setString(2, oldUsername);
-            int result=chgUserNameStatement.executeUpdate();
-            return result>0;
+            int result = chgUserNameStatement.executeUpdate();
+            return result == 1;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
+    }
+
+    synchronized public int getUserIdByLoginAndPassword(String login, String password) {
+        int id = -1;
+        try {
+            getUserIdByLoginAndPassword.setString(1, login);
+            getUserIdByLoginAndPassword.setString(2, password);
+            ResultSet resultSet = getUserIdByLoginAndPassword.executeQuery();
+
+            if (resultSet.next()) {
+                id = resultSet.getInt("id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return id;
     }
 }

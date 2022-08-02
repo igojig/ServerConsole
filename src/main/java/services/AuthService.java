@@ -10,4 +10,6 @@ public interface AuthService {
 
     boolean renameUser(String oldUsername, String newUsername) ;
 
+    public int getUserIdByLoginAndPassword(String login, String password);
+
 }

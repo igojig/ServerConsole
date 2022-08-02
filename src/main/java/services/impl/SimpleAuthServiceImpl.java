@@ -53,4 +53,9 @@ public class SimpleAuthServiceImpl implements AuthService {
     public boolean renameUser(String oldUserName, String newUsername) {
         return false;
     }
+
+    @Override
+    public int getUserIdByLoginAndPassword(String login, String password) {
+        return -1;
+    }
 }

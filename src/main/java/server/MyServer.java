@@ -147,7 +147,7 @@ public class MyServer {
                 clientHandler.sendClientMessage(sender.getUserName(), message, PRIVATE_MSG_CMD_PREFIX);
 
                 //дублируем сообшение себе
-                sender.sendClientMessage(sender.getUserName(), message + "-->" + sendToUserName, CLIENT_MSG_CMD_PREFIX);
+                sender.sendClientMessage(sender.getUserName(), message + "->" + sendToUserName, CLIENT_MSG_CMD_PREFIX);
                 return true;
             }
         }

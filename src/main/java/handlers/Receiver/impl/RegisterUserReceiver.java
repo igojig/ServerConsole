@@ -66,16 +66,23 @@ public class RegisterUserReceiver extends Receiver {
             return false;
         }
 
+        int id=mainHandler.getUserIdByLoginAndPassword(login, password);
+        System.out.println("id=" + id);
+
+
 // все в порядке - регистрируемся
         mainHandler.userName = username;
+        mainHandler.id=id;
+
         mainHandler.isLoggedIn = true;
 //        mainHandler.out.writeUTF(String.format("%s %s", REGISTER_OK, username));
-        mainHandler.write(String.format("%s %s", REGISTER_OK, username));
+        mainHandler.write(String.format("%s %s %s", REGISTER_OK, username, id));
 
         System.out.println("Новый пользователь зарегистрировался");
         System.out.println("Username: " + username);
         System.out.println("Login: " + login);
         System.out.println("Password: " + password);
+        System.out.println("id=" + id);
 //        mainHandler.myServer.subscribe(mainHandler);
         mainHandler.subscribe();
 

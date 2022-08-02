@@ -33,4 +33,9 @@ public class JDBCAuthServiceImpl implements AuthService{
     public boolean renameUser(String oldUsername, String newUsername) {
         return repository.renameUser(oldUsername, newUsername);
     }
+
+    @Override
+    public int getUserIdByLoginAndPassword(String login, String password) {
+        return repository.getUserIdByLoginAndPassword(login, password);
+    }
 }
