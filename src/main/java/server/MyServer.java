@@ -1,10 +1,12 @@
 package server;
 
+import exchanger.Exchanger;
 import handlers.ClientHandler;
 
 import static prefix.Prefix.*;
 
 
+import model.User;
 import services.AuthService;
 import services.impl.JDBCAuthServiceImpl;
 import repository.JDBCRepository;
@@ -141,10 +143,10 @@ public class MyServer {
         return clientHandlers.stream().anyMatch(o -> o.getUserName().equals(username));
     }
 
-    synchronized public boolean sendPrivateMessage(String sendToUserName, String message, ClientHandler sender) throws IOException {
+    synchronized public boolean sendPrivateMessage(Exchanger exchanger, ClientHandler sender) throws IOException {
         for (ClientHandler clientHandler : clientHandlers) {
-            if (clientHandler.isLoggedIn() && clientHandler.getUserName().equalsIgnoreCase(sendToUserName)) {
-                clientHandler.sendClientMessage(sender.getUserName(), message, PRIVATE_MSG_CMD_PREFIX);
+            if (clientHandler.isLoggedIn() && clientHandler.getUser().equals(exchanger.getUser())) {
+                clientHandler.sendClientMessage(sender.getUser(), message, PRIVATE_MSG_CMD_PREFIX);
 
                 //дублируем сообшение себе
                 sender.sendClientMessage(sender.getUserName(), message + "->" + sendToUserName, CLIENT_MSG_CMD_PREFIX);
@@ -233,5 +235,9 @@ public class MyServer {
 
     List<ClientHandler> getLoggedInUsers() {
         return clientHandlers.stream().filter(ClientHandler::isLoggedIn).toList();
+    }
+
+    public String getLasetDBError() {
+        return authService.getLastDBError();
     }
 }

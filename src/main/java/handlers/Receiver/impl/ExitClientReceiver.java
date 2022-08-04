@@ -1,5 +1,6 @@
 package handlers.Receiver.impl;
 
+import exchanger.Exchanger;
 import handlers.ClientHandler;
 import handlers.Receiver.Receiver;
 
@@ -16,9 +17,9 @@ public class ExitClientReceiver extends Receiver {
     }
 
     @Override
-    public boolean receive(String message) throws IOException {
-        if(Receiver.matchCommand(message, REQUIRED_COMMAND)){
-            System.out.println("Вызываем обработчик ExitClient: " + message);
+    public boolean receive(Exchanger exchanger) throws IOException {
+        if(Receiver.matchCommand(exchanger, REQUIRED_COMMAND)){
+            System.out.println("Вызываем обработчик ExitClient: " + exchanger);
             mainHandler.closeConnection();
             return true;
         }

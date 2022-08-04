@@ -1,10 +1,15 @@
 package repository;
 
+import model.User;
+
 import java.sql.*;
 import java.util.Optional;
 
 public class JDBCRepository {
     Connection connection;
+    
+    private static Throwable lastError;
+    
 
     PreparedStatement getUsernameByLoginAndPasswordStatement;
     PreparedStatement addUserStatement;
@@ -12,6 +17,8 @@ public class JDBCRepository {
 
     PreparedStatement chgUserNameStatement;
     PreparedStatement getUserIdByLoginAndPassword;
+    private PreparedStatement findUserByLoginAndPassword;
+    private PreparedStatement findUserByUsername;
 
     public JDBCRepository() throws SQLException, ClassNotFoundException {
         openConnection();
@@ -35,6 +42,10 @@ public class JDBCRepository {
             isUserPresentStatement = connection.prepareStatement("SELECT count(username) as qw FROM users where username=?");
             chgUserNameStatement = connection.prepareStatement("UPDATE users SET username=? where username=?");
             getUserIdByLoginAndPassword = connection.prepareStatement("SELECT id FROM users WHERE login=? AND password=?");
+            
+            findUserByLoginAndPassword =connection.prepareStatement("SELECT * from users WHERE login=? AND password=?");
+            findUserByUsername =connection.prepareStatement("Select * FROM users where username=?");
+            
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -117,16 +128,30 @@ public class JDBCRepository {
         }
     }
 
-    synchronized public boolean renameUser(String oldUsername, String newUsername) {
+    synchronized public Optional<String> renameUser(String oldUserName, String newUserName) {
         try {
-            chgUserNameStatement.setString(1, newUsername);
-            chgUserNameStatement.setString(2, oldUsername);
+            chgUserNameStatement.setString(1, oldUserName);
+            chgUserNameStatement.setString(2, newUserName);
             int result = chgUserNameStatement.executeUpdate();
-            return result == 1;
+
         } catch (SQLException e) {
+            lastError=e;
             e.printStackTrace();
-            return false;
+            return Optional.empty();
         }
+
+        try {
+            findUserByUsername.setString(1, newUserName);
+            ResultSet rs=findUserByUsername.executeQuery();
+            if(rs.next()){
+                String nu=rs.getString("username");
+                return Optional.of(nu);
+            }
+        } catch (SQLException e) {
+            lastError=e;
+            return Optional.empty();
+        }
+        return Optional.empty();
     }
 
     synchronized public int getUserIdByLoginAndPassword(String login, String password) {
@@ -143,5 +168,28 @@ public class JDBCRepository {
             e.printStackTrace();
         }
         return id;
+    }
+
+    public Optional<User> findUserByLoginAndPassword(User user) {
+        try {
+            findUserByLoginAndPassword.setString(1, user.getLogin());
+            findUserByLoginAndPassword.setString(2, user.getPassword());
+            ResultSet rs=findUserByLoginAndPassword.executeQuery();
+            if(rs.next()){
+                User newUser=new User((long) rs.getInt("id"), 
+                        rs.getString("username"), 
+                        rs.getString("login"),
+                        rs.getString("password"));
+                return Optional.of(newUser);
+            }
+        } catch (SQLException e) {
+            lastError=e;
+            return Optional.empty();
+        }
+        return Optional.empty();
+    }
+
+    public String getLastDBError() {
+        return lastError.getMessage();
     }
 }

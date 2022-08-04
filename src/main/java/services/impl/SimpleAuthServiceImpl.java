@@ -39,7 +39,7 @@ public class SimpleAuthServiceImpl implements AuthService {
 
     @Override
     synchronized public boolean addUser(String userName, String login, String password) {
-        return clients.add(new User(userName, login, password));
+        return false;
     }
 
     @Override
@@ -50,8 +50,8 @@ public class SimpleAuthServiceImpl implements AuthService {
     }
 
     @Override
-    public boolean renameUser(String oldUserName, String newUsername) {
-        return false;
+    public Optional<String> renameUser(String oldUserName, String newUsername) {
+        return Optional.empty();
     }
 
     @Override

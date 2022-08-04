@@ -1,13 +1,12 @@
 package handlers;
 
+import exchanger.Exchanger;
 import handlers.Receiver.*;
 import handlers.Receiver.impl.*;
+import model.User;
 import server.MyServer;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,10 +26,15 @@ public class ClientHandler {
     private final DataInputStream in;
     private final DataOutputStream out;
 
+    ObjectInputStream objectInputStream;
+    ObjectOutputStream objectOutputStream;
+
 
     // Наш будущий объект User
-    volatile public String userName;
-    volatile public int id;
+//    volatile public String userName;
+//    volatile public int id;
+
+    volatile public User user;
 
 
 
@@ -51,6 +55,9 @@ public class ClientHandler {
 
         this.in = new DataInputStream(clientSocket.getInputStream());
         this.out = new DataOutputStream(clientSocket.getOutputStream());
+
+        objectInputStream=new ObjectInputStream(in);
+        objectOutputStream=new ObjectOutputStream(out);
 
 
         //запускам поток-сторож для ожидания подключения в течение 120 сек. (WAIT_TIMEOUT)
@@ -112,7 +119,8 @@ public class ClientHandler {
         handleThread = new Thread(() -> {
             try {
                 while (true) {
-                    String message = in.readUTF();
+//                    String message = in.readUTF();
+                    Exchanger ex=(Exchanger) objectInputStream.readObject();
                     notifyReceiver(message);
                 }
             } catch (IOException e) {
@@ -124,6 +132,8 @@ public class ClientHandler {
                 } catch (IOException ex) {
                     e.printStackTrace();
                 }
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
             }
         });
         handleThread.setDaemon(true);
@@ -157,8 +167,8 @@ public class ClientHandler {
         myServer.broadcastServerMessage(message, this, mode);
     }
 
-    public boolean sendPrivateMessage(String sendToUserName, String message) throws IOException {
-        return myServer.sendPrivateMessage(sendToUserName, message, this);
+    public boolean sendPrivateMessage(Exchanger exchanger) throws IOException {
+        return myServer.sendPrivateMessage(exchanger,this);
     }
 
 
@@ -213,8 +223,8 @@ public class ClientHandler {
         return myServer.getAuthService().getUsernameByLoginAndPassword(login, password);
     }
 
-    public boolean changeUsername(String oldUsername, String newUsername){
-        return myServer.getAuthService().renameUser(oldUsername, newUsername);
+    public Optional<String> changeUsername(String oldUserName, String newUserName){
+        return myServer.getAuthService().renameUser(oldUserName, newUserName);
     }
 
     public boolean isUserPresentInDatabase(String username) {
@@ -235,5 +245,17 @@ public class ClientHandler {
 
     public int getUserIdByLoginAndPassword(String login, String password) {
        return myServer.getAuthService().getUserIdByLoginAndPassword(login, password);
+    }
+
+    public Optional<User> findUserByLoginAndPassword(User user) {
+        return  myServer.getAuthService().findUserByLoginAndPassword(user);
+    }
+
+    public String getLastDBError() {
+        return myServer.getLasetDBError();
+    }
+
+    public void writeObj(Exchanger exAnswer) throws IOException {
+        objectOutputStream.writeObject(exAnswer);
     }
 }

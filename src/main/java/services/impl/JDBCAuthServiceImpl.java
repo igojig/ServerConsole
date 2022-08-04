@@ -1,5 +1,6 @@
 package services.impl;
 
+import model.User;
 import repository.JDBCRepository;
 import services.AuthService;
 
@@ -30,12 +31,22 @@ public class JDBCAuthServiceImpl implements AuthService{
     }
 
     @Override
-    public boolean renameUser(String oldUsername, String newUsername) {
-        return repository.renameUser(oldUsername, newUsername);
+    public Optional<String> renameUser(String oldUserName, String newUserName) {
+        return repository.renameUser(oldUserName, newUserName);
     }
 
     @Override
     public int getUserIdByLoginAndPassword(String login, String password) {
         return repository.getUserIdByLoginAndPassword(login, password);
+    }
+
+    @Override
+    public Optional<User> findUserByLoginAndPassword(User user) {
+        return repository.findUserByLoginAndPassword(user);
+    }
+
+    @Override
+    public String getLastDBError() {
+        return repository.getLastDBError();
     }
 }

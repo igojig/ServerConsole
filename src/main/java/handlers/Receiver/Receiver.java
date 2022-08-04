@@ -1,5 +1,6 @@
 package handlers.Receiver;
 
+import exchanger.Exchanger;
 import handlers.ClientHandler;
 
 import java.io.IOException;
@@ -7,7 +8,7 @@ import java.io.IOException;
 abstract public class Receiver {
     protected ClientHandler mainHandler;
 
-    public abstract boolean receive(String message) throws IOException;
+    public abstract boolean receive(Exchanger ex) throws IOException;
 
     public Receiver(ClientHandler mainHandler) {
         this.mainHandler = mainHandler;
@@ -21,8 +22,9 @@ abstract public class Receiver {
         return message.split("\\s+");
     }
 
-    protected static boolean matchCommand(String message, String command) {
-        return parseMessage(message, 2)[0].equals(command);
+    protected static boolean matchCommand(Exchanger ex, String command) {
+//        return parseMessage(message, 2)[0].equals(command);
+        return ex.getCommand().equals(command);
     }
 
 }

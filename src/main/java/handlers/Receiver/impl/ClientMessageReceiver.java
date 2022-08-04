@@ -1,5 +1,6 @@
 package handlers.Receiver.impl;
 
+import exchanger.Exchanger;
 import handlers.ClientHandler;
 import handlers.Receiver.Receiver;
 
@@ -16,17 +17,18 @@ public class ClientMessageReceiver extends Receiver {
     }
 
     @Override
-    public boolean receive(String message) throws IOException {
-        if(Receiver.matchCommand(message, REQUIRED_COMMAND)){
-            System.out.println("Вызываем обработчик ClientMessage: " + message);
-            processClientMessage(message);
+    public boolean receive(Exchanger exchanger) throws IOException {
+        if(Receiver.matchCommand(exchanger, REQUIRED_COMMAND)){
+            System.out.println("Вызываем обработчик ClientMessage: " + exchanger);
+            processClientMessage(exchanger);
             return true;
         }
         return false;
     }
 
-    private void processClientMessage(String message) throws IOException {
-        String[] parts= Receiver.parseMessage(message, 2);
-        mainHandler.broadcastMessage(parts[1], true);
+    private void processClientMessage(Exchanger exchanger) throws IOException {
+//        String[] parts= Receiver.parseMessage(message, 2);
+
+        mainHandler.broadcastMessage(exchanger.getMessage(), true);
     }
 }
