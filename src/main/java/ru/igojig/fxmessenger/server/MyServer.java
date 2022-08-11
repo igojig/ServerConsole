@@ -1,13 +1,17 @@
-package server;
+package ru.igojig.fxmessenger.server;
 
-import handlers.ClientHandler;
+import ru.igojig.fxmessenger.exchanger.impl.ChangeUserList;
+import ru.igojig.fxmessenger.exchanger.impl.UserExchanger;
+import ru.igojig.fxmessenger.handlers.ClientHandler;
 
-import static prefix.Prefix.*;
+import static ru.igojig.fxmessenger.prefix.Prefix.*;
 
 
-import services.AuthService;
-import services.impl.JDBCAuthServiceImpl;
-import repository.JDBCRepository;
+import ru.igojig.fxmessenger.model.User;
+import ru.igojig.fxmessenger.prefix.Prefix;
+import ru.igojig.fxmessenger.services.AuthService;
+import ru.igojig.fxmessenger.services.impl.JDBCAuthServiceImpl;
+import ru.igojig.fxmessenger.repository.JDBCRepository;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -15,6 +19,7 @@ import java.net.Socket;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class MyServer {
 
@@ -97,57 +102,60 @@ public class MyServer {
      * @param clientHandler -
      * @throws IOException
      */
-    private void sendLoggedUsers(boolean mode, ClientHandler clientHandler) throws IOException {
-        StringBuilder sb = new StringBuilder();
+    synchronized private void sendLoggedUsers(boolean mode, ClientHandler clientHandler) throws IOException {
+
+        ChangeUserList changeUserList =new ChangeUserList();
 
         if (mode) {
-            sb.append("+");
+            changeUserList.setMode(ChangeUserList.Mode.ADD);
         } else {
-            sb.append("-");
+            changeUserList.setMode(ChangeUserList.Mode.REMOVE);
         }
-        sb.append(clientHandler.getUserName()).append(" ");
+        changeUserList.setChangedUser(clientHandler.getUser());
+
+        List<User> userList=new ArrayList<>();
+        for (ClientHandler handler : clientHandlers) {
+                userList.add(handler.getUser());
+        }
+
+        changeUserList.setUserList(userList);
 
         for (ClientHandler handler : clientHandlers) {
-            if (handler.isLoggedIn()) {
-                sb.append(handler.getUserName()).append(" ");
-            }
-        }
-
-        for (ClientHandler handler : clientHandlers) {
-
-            if (handler.isLoggedIn()) {
-                handler.sendServerMessage(SERVER_MSG_CMD_PREFIX_LOGGED_USERS, sb.toString());
-            }
+                handler.sendMessage(LOGGED_USERS, "обновление списка пользователей", changeUserList);
         }
     }
 
     // посылаем когда пльзователь изменил имя
-    public void sendUpdateUsers() throws IOException {
-        StringBuilder sb = new StringBuilder();
-        for (ClientHandler clientHandler : clientHandlers) {
-            if (clientHandler.isLoggedIn()) {
-                sb.append(clientHandler.getUserName()).append(" ");
-            }
-        }
+    synchronized public void sendUpdateUsers() throws IOException {
+        List<User> userList=new ArrayList<>();
 
         for (ClientHandler clientHandler : clientHandlers) {
-            if (clientHandler.isLoggedIn()) {
-                clientHandler.sendServerMessage(CHANGE_USERNAME_NEW_LIST, sb.toString());
-            }
+                userList.add(clientHandler.getUser());
+        }
+
+        ChangeUserList changeUserList =new ChangeUserList();
+        changeUserList.setUserList(userList);
+        changeUserList.setMode(ChangeUserList.Mode.CHANGE_NAME);
+
+        for (ClientHandler clientHandler : clientHandlers) {
+                clientHandler.sendMessage(CHANGE_USERNAME_NEW_LIST, "пользователь сменил имя", changeUserList);
         }
     }
 
-    synchronized public boolean isAlreadyLogin(String username) {
-        return clientHandlers.stream().anyMatch(o -> o.getUserName().equals(username));
+    synchronized public boolean isAlreadyLogin(User user) {
+//        return clientHandlers.stream().anyMatch(o -> o.user.equals(user));
+        Optional<User> optionalUser=authService.findUserByLoginAndPassword(user.getLogin(), user.getPassword());
+        return optionalUser.filter(value -> clientHandlers.stream().anyMatch(o -> o.user.getId().equals(value.getId()))).isPresent();
+
     }
 
-    synchronized public boolean sendPrivateMessage(String sendToUserName, String message, ClientHandler sender) throws IOException {
+    synchronized public boolean sendPrivateMessage(String message, ClientHandler sender, User sendToUser) throws IOException {
         for (ClientHandler clientHandler : clientHandlers) {
-            if (clientHandler.isLoggedIn() && clientHandler.getUserName().equalsIgnoreCase(sendToUserName)) {
-                clientHandler.sendClientMessage(sender.getUserName(), message, PRIVATE_MSG_CMD_PREFIX);
+            if (clientHandler.getUser().getId().equals(sendToUser.getId())) {
+                clientHandler.sendMessage(PRIVATE_MSG, message, new UserExchanger(sender.getUser()));
 
                 //дублируем сообшение себе
-                sender.sendClientMessage(sender.getUserName(), message + "->" + sendToUserName, CLIENT_MSG_CMD_PREFIX);
+                sender.sendMessage(CLIENT_MSG, message + "->" + sendToUser.getUsername(), new UserExchanger(sender.getUser()));
                 return true;
             }
         }
@@ -160,57 +168,49 @@ public class MyServer {
      * @param mode    - true - сообщение рассылается всем, false - всем кроме себя
      * @throws IOException
      */
-    synchronized public void broadcastMessage(String message, ClientHandler sender, boolean mode) throws IOException {
-
-        List<ClientHandler> list = getLoggedInUsers();
+    synchronized public void broadcastMessage(Prefix prefix, String message, ClientHandler sender, boolean mode) throws IOException {
 
         if (mode) {
-            for (ClientHandler clientHandler : list) {
-                clientHandler.sendClientMessage(sender.getUserName(), message, CLIENT_MSG_CMD_PREFIX);
+            for (ClientHandler clientHandler : clientHandlers) {
+                clientHandler.sendMessage(prefix, message, new UserExchanger(sender.getUser()));
             }
         } else {
-            for (ClientHandler clientHandler : list) {
+            for (ClientHandler clientHandler : clientHandlers) {
                 if (clientHandler != sender) {
-                    clientHandler.sendClientMessage(sender.getUserName(), message, CLIENT_MSG_CMD_PREFIX);
+                    clientHandler.sendMessage(prefix, message, new UserExchanger(sender.getUser()));
                 }
             }
         }
+    }
+//
+//    /**
+//     * @param message
+//     * @param sender
+//     * @param mode    - true - сообщение рассылается всем, false - всем кроме себя
+//     * @throws IOException
+//     */
+//    synchronized public void broadcastServerMessage(String message, ClientHandler sender, boolean mode) throws IOException {
+//
+////        List<ClientHandler> list = getLoggedInUsers();
+//
+//        if (mode) {
+//            for (ClientHandler clientHandler : clientHandlers) {
+//                clientHandler.sendMessage(SERVER_MSG, message, new UserExchanger(sender.getUser()));
+//            }
+//        } else {
+//            for (ClientHandler clientHandler : clientHandlers) {
+//                if (clientHandler != sender) {
+//                    clientHandler.sendMessage(SERVER_MSG, message, new UserExchanger(sender.getUser()));
+//                }
+//            }
+//        }
 
 //        for (ClientHandler handler : clientHandlers) {
 //            if (handler.isLoggedIn()) {
 //                handler.sendClientMessage(sender.getUserName(), message, CLIENT_MSG_CMD_PREFIX);
 //            }
 //        }
-    }
-
-    /**
-     * @param message
-     * @param sender
-     * @param mode    - true - сообщение рассылается всем, false - всем кроме себя
-     * @throws IOException
-     */
-    synchronized public void broadcastServerMessage(String message, ClientHandler sender, boolean mode) throws IOException {
-
-        List<ClientHandler> list = getLoggedInUsers();
-
-        if (mode) {
-            for (ClientHandler clientHandler : list) {
-                clientHandler.sendServerMessage(SERVER_MSG_CMD_PREFIX, message);
-            }
-        } else {
-            for (ClientHandler clientHandler : list) {
-                if (clientHandler != sender) {
-                    clientHandler.sendServerMessage(SERVER_MSG_CMD_PREFIX, message);
-                }
-            }
-        }
-
-//        for (ClientHandler handler : clientHandlers) {
-//            if (handler.isLoggedIn()) {
-//                handler.sendClientMessage(sender.getUserName(), message, CLIENT_MSG_CMD_PREFIX);
-//            }
-//        }
-    }
+//    }
 
 
     synchronized public void stop() throws IOException {
@@ -221,7 +221,7 @@ public class MyServer {
         }
 
         serverSocket.close();
-        ((JDBCRepository) repository).closeConnection();
+//        ((JDBCRepository) repository).closeConnection();
         System.out.println("-----------------");
         System.out.println("Сервер остановлен");
         System.exit(0);
@@ -230,8 +230,12 @@ public class MyServer {
     public AuthService getAuthService() {
         return authService;
     }
+//
+//    List<ClientHandler> getLoggedInUsers() {
+//        return clientHandlers.stream().filter(ClientHandler::isLoggedIn).toList();
+//    }
 
-    List<ClientHandler> getLoggedInUsers() {
-        return clientHandlers.stream().filter(ClientHandler::isLoggedIn).toList();
+    public String getLasetDBError() {
+        return authService.getLastDBError();
     }
 }

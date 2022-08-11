@@ -1,13 +1,14 @@
-package handlers;
+package ru.igojig.fxmessenger.handlers;
 
-import handlers.Receiver.*;
-import handlers.Receiver.impl.*;
-import server.MyServer;
+import ru.igojig.fxmessenger.exchanger.ChatObject;
+import ru.igojig.fxmessenger.exchanger.Exchanger;
+import ru.igojig.fxmessenger.handlers.Receiver.*;
+import ru.igojig.fxmessenger.handlers.Receiver.impl.*;
+import ru.igojig.fxmessenger.model.User;
+import ru.igojig.fxmessenger.prefix.Prefix;
+import ru.igojig.fxmessenger.server.MyServer;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,17 +25,22 @@ public class ClientHandler {
     private final MyServer myServer;
     private final Socket clientSocket;
 
-    private final DataInputStream in;
-    private final DataOutputStream out;
+//    private final DataInputStream in;
+//    private final DataOutputStream out;
+
+    ObjectInputStream objectInputStream;
+    ObjectOutputStream objectOutputStream;
 
 
     // Наш будущий объект User
-    volatile public String userName;
-    volatile public int id;
+//    volatile public String userName;
+//    volatile public int id;
+
+    volatile public User user;
 
 
 
-    volatile public boolean isLoggedIn = false;
+//    volatile public boolean isLoggedIn = false;
 
     // поток обработки сообшений
     private Thread handleThread;
@@ -49,8 +55,11 @@ public class ClientHandler {
         this.myServer = myServer;
         this.clientSocket = clientSocket;
 
-        this.in = new DataInputStream(clientSocket.getInputStream());
-        this.out = new DataOutputStream(clientSocket.getOutputStream());
+//        this.in = new DataInputStream(clientSocket.getInputStream());
+//        this.out = new DataOutputStream(clientSocket.getOutputStream());
+
+        objectInputStream=new ObjectInputStream(clientSocket.getInputStream());
+        objectOutputStream=new ObjectOutputStream(clientSocket.getOutputStream());
 
 
         //запускам поток-сторож для ожидания подключения в течение 120 сек. (WAIT_TIMEOUT)
@@ -77,9 +86,9 @@ public class ClientHandler {
         receiverList.addAll(Arrays.asList(receiver));
     }
 
-    public void notifyReceiver(String message) throws IOException {
+    public void notifyReceiver(Exchanger exchanger) throws IOException {
         for (Receiver receiver : receiverList) {
-            if (receiver.receive(message)) {
+            if (receiver.receive(exchanger)) {
                 break;
             }
         }
@@ -90,17 +99,17 @@ public class ClientHandler {
             try {
                 System.out.println("Поток-сторож запущен: " + this);
                 Thread.sleep(WAIT_TIMEOUT);
-                if (userName == null) {
+                if (user == null) {
                     System.out.println("Поток-сторож определил что никто не авторизовался за " + WAIT_TIMEOUT / 1000 + "сек. Отключаем клиента");
                     //TODO
                     // out.writeUTF(CMD_SHUT_DOWN_CLIENT);
                     closeConnection();
                 } else {
-                    System.out.println("Поток-сторож определил что подключен пользователь: " + getUserName() + ". Продолжаем работу");
+                    System.out.println("Поток-сторож определил что подключен пользователь: " + user + ". Продолжаем работу");
                 }
             } catch (InterruptedException | IOException e) {
                 e.printStackTrace();
-                System.out.println(userName + " Поток-сторож выбросил ошибку");
+                System.out.println(user + " Поток-сторож выбросил ошибку");
             }
         });
         waitTimeOutThread.setDaemon(true);
@@ -112,8 +121,12 @@ public class ClientHandler {
         handleThread = new Thread(() -> {
             try {
                 while (true) {
-                    String message = in.readUTF();
-                    notifyReceiver(message);
+//                    String message = in.readUTF();
+
+                    Object o= objectInputStream.readObject();
+//                    System.out.println(o);
+                    Exchanger ex=(Exchanger)o;
+                    notifyReceiver(ex);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -124,6 +137,8 @@ public class ClientHandler {
                 } catch (IOException ex) {
                     e.printStackTrace();
                 }
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
             }
         });
         handleThread.setDaemon(true);
@@ -135,93 +150,91 @@ public class ClientHandler {
 
 
 
-    public void write(String message) throws IOException {
-        out.writeUTF(message);
+//    public void write(String message) throws IOException {
+//        out.writeUTF(message);
+//    }
+
+
+    public void sendMessage(Prefix prefix, String message, ChatObject chatObject) throws IOException {
+        Exchanger ex=new Exchanger(prefix, message, chatObject);
+
+        objectOutputStream.reset();
+        objectOutputStream.writeObject(ex);
     }
 
+//    public void sendServerMessage(Prefix messageType, String message, ChatObject chatObject) throws IOException {
+//        Exchanger ex=new Exchanger(messageType, message, chatObject);
+//
+//        objectOutputStream.reset();
+//        objectOutputStream.writeObject(ex);
+//    }
 
-    public void sendClientMessage(String sender, String message, String messageType) throws IOException {
-        out.writeUTF(String.format("%s %s %s", messageType, sender, message));
-        out.flush();
+    public void writeObj(Exchanger exAnswer) throws IOException {
+        objectOutputStream.reset();
+        objectOutputStream.writeObject(exAnswer);
     }
 
-    public void sendServerMessage(String messageType, String message) throws IOException {
-        out.writeUTF(String.format("%s %s", messageType, message));
+    public void broadcastMessage(Prefix prefix, String message, boolean mode) throws IOException {
+        myServer.broadcastMessage(prefix, message, this, mode);
     }
 
-    public void broadcastMessage(String message, boolean mode) throws IOException {
-        myServer.broadcastMessage(message, this, mode);
+//    public void broadcastServerMessage(String message, boolean mode) throws IOException {
+//        myServer.broadcastServerMessage(message, this, mode);
+//    }
+
+    public boolean sendPrivateMessage(String message, User sendToUser) throws IOException {
+        return myServer.sendPrivateMessage(message,this, sendToUser);
     }
-
-    public void broadcastServerMessage(String message, boolean mode) throws IOException {
-        myServer.broadcastServerMessage(message, this, mode);
-    }
-
-    public boolean sendPrivateMessage(String sendToUserName, String message) throws IOException {
-        return myServer.sendPrivateMessage(sendToUserName, message, this);
-    }
-
-
-
-
-
-
-
-
-
-
 
 
     public void closeSocket() throws IOException {
 
 //        handleThread.interrupt();
 
-        in.close();
-        out.close();
+        objectOutputStream.close();
+        objectInputStream.close();
         clientSocket.close();
     }
 
+//    public String getUserName() {
+//        return userName;
 
-    public String getUserName() {
-        return userName;
-    }
+//    }
 
     public void closeConnection() throws IOException {
         myServer.unsubscribe(this);
         waitTimeOutThread.interrupt();
+
         closeSocket();
 
-        System.out.println("Пользователь: " + getUserName() + " вышел из системы");
-        userName = null;
-        isLoggedIn = false;
+        System.out.println("Пользователь: " + user + " вышел из системы");
+        user = null;
+//        isLoggedIn = false;
     }
 
-
-    public boolean isLoggedIn() {
-        return isLoggedIn;
-    }
+//
+//    public boolean isLoggedIn() {
+//        return isLoggedIn;
+//    }
 
     public void subscribe() throws IOException {
         myServer.subscribe(this);
     }
 
-    public boolean isAlreadyLogin(String username) {
-        return myServer.isAlreadyLogin(username);
+    public boolean isAlreadyLogin(User user) {
+        return myServer.isAlreadyLogin(user);
     }
 
     public Optional<String> getUsernameByLoginAndPassword(String login, String password) {
         return myServer.getAuthService().getUsernameByLoginAndPassword(login, password);
     }
 
-    public boolean changeUsername(String oldUsername, String newUsername){
-        return myServer.getAuthService().renameUser(oldUsername, newUsername);
+    public Optional<String> changeUsername(String oldUserName, String newUserName){
+        return myServer.getAuthService().renameUser(oldUserName, newUserName);
     }
 
-    public boolean isUserPresentInDatabase(String username) {
-        return myServer.getAuthService().isUserPresentInDatabase(username);
-    }
 
-    public boolean addUser(String userName, String login, String password) {
+    public Optional<User> addUser(String userName, String login, String password) {
         return myServer.getAuthService().addUser(userName, login, password);
     }
 
@@ -235,5 +248,17 @@ public class ClientHandler {
 
     public int getUserIdByLoginAndPassword(String login, String password) {
        return myServer.getAuthService().getUserIdByLoginAndPassword(login, password);
+    }
+
+    public Optional<User> findUserByLoginAndPassword(String login, String password) {
+        return  myServer.getAuthService().findUserByLoginAndPassword(login, password);
+    }
+
+    public String getLastDBError() {
+        return myServer.getLasetDBError();
+    }
+
+    public User getUser() {
+        return user;
     }
 }

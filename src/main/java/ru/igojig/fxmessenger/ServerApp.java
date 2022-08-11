@@ -1,9 +1,8 @@
-import server.MyServer;
+package ru.igojig.fxmessenger;
+
+import ru.igojig.fxmessenger.server.MyServer;
 
 import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Set;
-import java.util.TreeSet;
 
 public class ServerApp {
 
