@@ -316,13 +316,13 @@ public class JDBCRepository {
                     return Optional.of(newUser);
                 }
                 lastError=new Exception(String.format("Поользователя с логином:%s и паролем:%s не существует", login, password));
+                return Optional.empty();
             }
         } catch (SQLException e) {
             e.printStackTrace();
             lastError = e;
             return Optional.empty();
         }
-        return Optional.empty();
 
 //        try {
 //            findUserByLoginAndPassword.setString(1, login);

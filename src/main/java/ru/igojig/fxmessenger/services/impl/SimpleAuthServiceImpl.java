@@ -3,6 +3,7 @@ package ru.igojig.fxmessenger.services.impl;
 import ru.igojig.fxmessenger.model.User;
 import ru.igojig.fxmessenger.services.AuthService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,15 +11,15 @@ public class SimpleAuthServiceImpl implements AuthService {
 
     private static  List<User> clients;
 
-//    static {
-//        clients = new ArrayList<>(List.of(
-//                new User("Ivanov", "ivanov", "1"),
-//                new User("Petrov", "petrov", "1"),
-//                new User("Sidorov", "sidorov", "1"),
-//                new User("Fedorov", "fedorov", "1"),
-//                new User("Smirnov", "smirnov", "1")
-//        ));
-//    }
+    static {
+        clients = new ArrayList<>(List.of(
+                new User(1L,"Ivanov", "ivanov", "1"),
+                new User(2L,"Petrov", "petrov", "1"),
+                new User(3L,"Sidorov", "sidorov", "1"),
+                new User(4L,"Fedorov", "fedorov", "1"),
+                new User(5L,"Smirnov", "smirnov", "1")
+        ));
+    }
 
     public SimpleAuthServiceImpl()  {
 

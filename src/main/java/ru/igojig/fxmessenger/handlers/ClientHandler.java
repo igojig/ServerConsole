@@ -141,7 +141,7 @@ public class ClientHandler {
                 throw new RuntimeException(e);
             }
         });
-        handleThread.setDaemon(true);
+//        handleThread.setDaemon(true);
         handleThread.start();
     }
 
