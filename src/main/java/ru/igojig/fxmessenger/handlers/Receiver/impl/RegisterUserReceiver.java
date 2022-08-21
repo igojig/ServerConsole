@@ -40,7 +40,8 @@ public class RegisterUserReceiver extends Receiver {
 
     private boolean doRegister(Exchanger exchanger) throws IOException {
 
-        UserExchanger userExchanger=(UserExchanger)exchanger.getChatObject();
+//        UserExchanger userExchanger=(UserExchanger)exchanger.getChatExchanger();
+        UserExchanger userExchanger=exchanger.getChatExchanger(UserExchanger.class);
 
         String login=userExchanger.getUser().getLogin();
         String password=userExchanger.getUser().getPassword();

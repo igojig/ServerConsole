@@ -1,6 +1,6 @@
 package ru.igojig.fxmessenger.server;
 
-import ru.igojig.fxmessenger.exchanger.impl.ChangeUserList;
+import ru.igojig.fxmessenger.exchanger.impl.UserListExchanger;
 import ru.igojig.fxmessenger.exchanger.impl.UserExchanger;
 import ru.igojig.fxmessenger.handlers.ClientHandler;
 
@@ -9,9 +9,11 @@ import static ru.igojig.fxmessenger.prefix.Prefix.*;
 
 import ru.igojig.fxmessenger.model.User;
 import ru.igojig.fxmessenger.prefix.Prefix;
-import ru.igojig.fxmessenger.services.AuthService;
-import ru.igojig.fxmessenger.services.impl.JDBCAuthServiceImpl;
+import ru.igojig.fxmessenger.services.auth.AuthService;
+import ru.igojig.fxmessenger.services.auth.impl.JDBCAuthServiceImpl;
 import ru.igojig.fxmessenger.repository.JDBCRepository;
+import ru.igojig.fxmessenger.services.storage.HistoryService;
+import ru.igojig.fxmessenger.services.storage.impl.FileHistoryServiceImpl;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -30,6 +32,8 @@ public class MyServer {
 
     JDBCRepository repository;
 
+    HistoryService historyService;
+
     public MyServer(int port) throws IOException {
         clientHandlers = new ArrayList<>();
 
@@ -42,6 +46,7 @@ public class MyServer {
         }
 //        authService = new SimpleAuthServiceImpl();
         authService = new JDBCAuthServiceImpl(repository);
+        historyService=new FileHistoryServiceImpl();
 
         serverSocket = new ServerSocket(port);
     }
@@ -104,24 +109,24 @@ public class MyServer {
      */
     synchronized private void sendLoggedUsers(boolean mode, ClientHandler clientHandler) throws IOException {
 
-        ChangeUserList changeUserList =new ChangeUserList();
+        UserListExchanger userListExchanger =new UserListExchanger();
 
         if (mode) {
-            changeUserList.setMode(ChangeUserList.Mode.ADD);
+            userListExchanger.setMode(UserListExchanger.Mode.ADD);
         } else {
-            changeUserList.setMode(ChangeUserList.Mode.REMOVE);
+            userListExchanger.setMode(UserListExchanger.Mode.REMOVE);
         }
-        changeUserList.setChangedUser(clientHandler.getUser());
+        userListExchanger.setChangedUser(clientHandler.getUser());
 
         List<User> userList=new ArrayList<>();
         for (ClientHandler handler : clientHandlers) {
                 userList.add(handler.getUser());
         }
 
-        changeUserList.setUserList(userList);
+        userListExchanger.setUserList(userList);
 
         for (ClientHandler handler : clientHandlers) {
-                handler.sendMessage(LOGGED_USERS, "обновление списка пользователей", changeUserList);
+                handler.sendMessage(LOGGED_USERS, "обновление списка пользователей", userListExchanger);
         }
     }
 
@@ -133,12 +138,12 @@ public class MyServer {
                 userList.add(clientHandler.getUser());
         }
 
-        ChangeUserList changeUserList =new ChangeUserList();
-        changeUserList.setUserList(userList);
-        changeUserList.setMode(ChangeUserList.Mode.CHANGE_NAME);
+        UserListExchanger userListExchanger =new UserListExchanger();
+        userListExchanger.setUserList(userList);
+        userListExchanger.setMode(UserListExchanger.Mode.CHANGE_NAME);
 
         for (ClientHandler clientHandler : clientHandlers) {
-                clientHandler.sendMessage(CHANGE_USERNAME_NEW_LIST, "пользователь сменил имя", changeUserList);
+                clientHandler.sendMessage(CHANGE_USERNAME_NEW_LIST, "пользователь сменил имя", userListExchanger);
         }
     }
 
@@ -235,7 +240,15 @@ public class MyServer {
 //        return clientHandlers.stream().filter(ClientHandler::isLoggedIn).toList();
 //    }
 
-    public String getLasetDBError() {
+    public String getLastDBError() {
         return authService.getLastDBError();
+    }
+
+    synchronized public List<String> getHistory(ClientHandler clientHandler) {
+        return historyService.getHistory(clientHandler.getUser());
+    }
+
+    public void saveHistory(List<String> history, ClientHandler clientHandler) {
+        historyService.setHistory(clientHandler.getUser(), history);
     }
 }

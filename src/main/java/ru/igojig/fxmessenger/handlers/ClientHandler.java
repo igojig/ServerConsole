@@ -1,12 +1,13 @@
 package ru.igojig.fxmessenger.handlers;
 
-import ru.igojig.fxmessenger.exchanger.ChatObject;
+import ru.igojig.fxmessenger.exchanger.ChatExchanger;
 import ru.igojig.fxmessenger.exchanger.Exchanger;
 import ru.igojig.fxmessenger.handlers.Receiver.*;
 import ru.igojig.fxmessenger.handlers.Receiver.impl.*;
 import ru.igojig.fxmessenger.model.User;
 import ru.igojig.fxmessenger.prefix.Prefix;
 import ru.igojig.fxmessenger.server.MyServer;
+import ru.igojig.fxmessenger.services.storage.HistoryService;
 
 import java.io.*;
 import java.net.Socket;
@@ -30,6 +31,8 @@ public class ClientHandler {
 
     ObjectInputStream objectInputStream;
     ObjectOutputStream objectOutputStream;
+
+    HistoryService historyService;
 
 
     // Наш будущий объект User
@@ -73,6 +76,8 @@ public class ClientHandler {
                 new PrivateMessageReceiver(this),
                 new StopServerReceiver(this),
                 new ChangeUsernameReceiver(this),
+                new HistoryRequestReceiver(this),
+                new HistorySaveReceiver(this),
 
                 // должна быть последней строкой
                 new UnknownMessageReceiver(this),
@@ -155,8 +160,8 @@ public class ClientHandler {
 //    }
 
 
-    public void sendMessage(Prefix prefix, String message, ChatObject chatObject) throws IOException {
-        Exchanger ex=new Exchanger(prefix, message, chatObject);
+    public void sendMessage(Prefix prefix, String message, ChatExchanger chatExchanger) throws IOException {
+        Exchanger ex=new Exchanger(prefix, message, chatExchanger);
 
         objectOutputStream.reset();
         objectOutputStream.writeObject(ex);
@@ -225,9 +230,9 @@ public class ClientHandler {
         return myServer.isAlreadyLogin(user);
     }
 
-    public Optional<String> getUsernameByLoginAndPassword(String login, String password) {
-        return myServer.getAuthService().getUsernameByLoginAndPassword(login, password);
-    }
+//    public Optional<String> getUsernameByLoginAndPassword(String login, String password) {
+//        return myServer.getAuthService().getUsernameByLoginAndPassword(login, password);
+//    }
 
     public Optional<String> changeUsername(String oldUserName, String newUserName){
         return myServer.getAuthService().renameUser(oldUserName, newUserName);
@@ -245,20 +250,29 @@ public class ClientHandler {
     public void sendUpdatedUserList() throws IOException {
         myServer.sendUpdateUsers();
     }
-
-    public int getUserIdByLoginAndPassword(String login, String password) {
-       return myServer.getAuthService().getUserIdByLoginAndPassword(login, password);
-    }
+//
+//    public int getUserIdByLoginAndPassword(String login, String password) {
+//       return myServer.getAuthService().getUserIdByLoginAndPassword(login, password);
+//    }
 
     public Optional<User> findUserByLoginAndPassword(String login, String password) {
         return  myServer.getAuthService().findUserByLoginAndPassword(login, password);
     }
 
     public String getLastDBError() {
-        return myServer.getLasetDBError();
+        return myServer.getLastDBError();
     }
 
     public User getUser() {
         return user;
+    }
+
+
+    public List<String> getHistory() {
+        return myServer.getHistory(this);
+    }
+
+    public void saveHistory(List<String> history) {
+        myServer.saveHistory(history, this);
     }
 }

@@ -39,7 +39,9 @@ public class AuthMessageReceiver extends Receiver {
     private boolean processAuthentication(Exchanger ex) throws IOException {
         System.out.println("Аутентификация: " + ex);
 
-        UserExchanger userExchanger= (UserExchanger) ex.getChatObject();
+//        UserExchanger userExchanger= (UserExchanger) ex.getChatExchanger();
+        UserExchanger userExchanger=  ex.getChatExchanger(UserExchanger.class);
+
 
         // пользователь уже залогинен в системе
         if (mainHandler.isAlreadyLogin(userExchanger.getUser())) {

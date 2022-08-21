@@ -30,7 +30,8 @@ public class PrivateMessageReceiver extends Receiver {
     }
 
     private void processPrivateMessage(Exchanger exchanger) throws IOException {
-        UserExchanger userExchanger=(UserExchanger)exchanger.getChatObject();
+//        UserExchanger userExchanger=(UserExchanger)exchanger.getChatExchanger();
+        UserExchanger userExchanger=exchanger.getChatExchanger(UserExchanger.class);
         User sendToUser=userExchanger.getUser();
 
         if (!mainHandler.sendPrivateMessage(exchanger.getMessage(), sendToUser)) {

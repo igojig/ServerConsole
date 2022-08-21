@@ -4,7 +4,6 @@ import ru.igojig.fxmessenger.exchanger.Exchanger;
 import ru.igojig.fxmessenger.exchanger.impl.UserExchanger;
 import ru.igojig.fxmessenger.handlers.ClientHandler;
 import ru.igojig.fxmessenger.handlers.Receiver.Receiver;
-import ru.igojig.fxmessenger.model.User;
 import ru.igojig.fxmessenger.prefix.Prefix;
 
 import java.io.IOException;
@@ -31,7 +30,8 @@ public class ChangeUsernameReceiver extends Receiver {
     }
 
     public boolean processChangeName(Exchanger exchanger) throws IOException {
-        UserExchanger userExchanger=(UserExchanger)exchanger.getChatObject();
+//        UserExchanger userExchanger=(UserExchanger)exchanger.getChatExchanger();
+        UserExchanger userExchanger=exchanger.getChatExchanger(UserExchanger.class);
 
 //        String[] messageParts=Receiver.parseMessage(message, 2);
         String newUserName=userExchanger.getUser().getUsername();
