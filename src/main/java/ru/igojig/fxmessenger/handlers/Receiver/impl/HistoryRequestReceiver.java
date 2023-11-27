@@ -1,6 +1,8 @@
 package ru.igojig.fxmessenger.handlers.Receiver.impl;
 
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.igojig.fxmessenger.exchanger.Exchanger;
 import ru.igojig.fxmessenger.exchanger.impl.HistoryExchanger;
 import ru.igojig.fxmessenger.handlers.ClientHandler;
@@ -14,6 +16,8 @@ import static ru.igojig.fxmessenger.prefix.Prefix.*;
 
 public class HistoryRequestReceiver extends Receiver {
 
+    private static final Logger logger= LogManager.getLogger(HistoryRequestReceiver.class);
+
     private static final Prefix REQUIRED_COMMAND = HISTORY_REQUEST;
 
     public HistoryRequestReceiver(ClientHandler mainHandler) {
@@ -23,7 +27,7 @@ public class HistoryRequestReceiver extends Receiver {
     @Override
     public boolean receive(Exchanger ex) throws IOException {
         if (Receiver.matchCommand(ex, REQUIRED_COMMAND)) {
-            System.out.println("Вызываем обработчик получения истории: " + ex);
+            logger.debug("Вызываем обработчик получения истории: " + ex);
             getHistory(ex);
             return true;
         }
@@ -32,15 +36,16 @@ public class HistoryRequestReceiver extends Receiver {
 
     public void getHistory(Exchanger exchanger){
 //        History history=exchanger.getChatObject(History.class);
-        List<String> userHistory=mainHandler.getHistory();
+        List<String> userHistory=mainHandler.loadHistory();
         HistoryExchanger h=new HistoryExchanger();
         h.setHistoryList(userHistory);
         Exchanger ex=new Exchanger(HISTORY_LOAD, "отправляем историю сообшений", h);
         try {
             mainHandler.writeObj(ex);
         } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Не удалось отправить файл с историей: " + ex);
+//            e.printStackTrace();
+//            System.out.println("Не удалось отправить файл с историей: " + ex);
+            logger.warn("Не удалось отправить файл с историей: " + ex, e);
         }
 
 

@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public class JDBCAuthServiceImpl implements AuthService{
 
-    JDBCRepository repository;
+    private JDBCRepository repository;
 
     public JDBCAuthServiceImpl(JDBCRepository repository) {
         this.repository = repository;

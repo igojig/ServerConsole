@@ -1,13 +1,19 @@
 package ru.igojig.fxmessenger.repository;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.igojig.fxmessenger.model.User;
-import ru.igojig.fxmessenger.prefix.Prefix;
 
+import java.io.InputStream;
+import java.net.URL;
 import java.sql.*;
 import java.util.Optional;
 
+
 public class JDBCRepository {
 //    Connection connection;
+
+     private static final Logger logger= LogManager.getLogger(JDBCRepository.class);
 
     private static Throwable lastError;
 
@@ -36,7 +42,7 @@ public class JDBCRepository {
 //        openConnection();
         Class.forName("org.sqlite.JDBC");
 //        createStatements();
-        System.out.println("Соединение с базой данных установлено");
+        logger.info("Драйвер JDBC загружен");
 
     }
 
@@ -48,8 +54,21 @@ public class JDBCRepository {
 //
 //    }
 
-    public Connection getConnection() throws SQLException {
-        return DriverManager.getConnection("jdbc:sqlite:users.db");
+    public Connection getConnection() {
+//        String connectionStr="jdbc:sqlite:users.db";
+        String connectionStr="jdbc:sqlite::resource:users.db";
+
+//        String dbName = getClass().getResource("/users.db").toString();
+//
+//        connectionStr+=dbName;
+//        System.out.println(connectionStr);
+        System.out.println(connectionStr);
+        try {
+            return DriverManager.getConnection(connectionStr);
+        } catch (SQLException e) {
+            logger.fatal("Ошибка получения соединения: " + connectionStr, e);
+            throw new RuntimeException(e);
+        }
     }
 
 //
@@ -97,27 +116,27 @@ public class JDBCRepository {
 //        System.out.println("Соединение с БД закрыто");
 //    }
 
-
-    public Optional<String> getUsernameByLoginAndPassword(String login, String password) {
-        try (
-                Connection connection = getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(getUsernameByLoginAndPasswordSQL);
-        ) {
-            preparedStatement.setString(1, login);
-            preparedStatement.setString(2, password);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return Optional.of(resultSet.getString("username"));
-                } else {
-                    lastError=new Exception("Нет данных");
-                    return Optional.empty();
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            lastError = e;
-            return Optional.empty();
-        }
+//
+//    public Optional<String> getUsernameByLoginAndPassword(String login, String password) {
+//        try (
+//                Connection connection = getConnection();
+//                PreparedStatement preparedStatement = connection.prepareStatement(getUsernameByLoginAndPasswordSQL);
+//        ) {
+//            preparedStatement.setString(1, login);
+//            preparedStatement.setString(2, password);
+//            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+//                if (resultSet.next()) {
+//                    return Optional.of(resultSet.getString("username"));
+//                } else {
+//                    lastError=new Exception("Нет данных");
+//                    return Optional.empty();
+//                }
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//            lastError = e;
+//            return Optional.empty();
+//        }
 
 
 //        try {
@@ -133,7 +152,7 @@ public class JDBCRepository {
 //            e.printStackTrace();
 //            return Optional.empty();
 //        }
-    }
+//    }
 
 
     public Optional<User> addUser(String userName, String login, String password) {
@@ -144,6 +163,7 @@ public class JDBCRepository {
             preparedStatement.setString(2, password);
             preparedStatement.setString(3, userName);
             int result = preparedStatement.executeUpdate();
+
             if (result == 1) {
                 int id = getUserIdByLoginAndPassword(login, password);
                 if (id > 0) {
@@ -153,7 +173,8 @@ public class JDBCRepository {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
+            logger.error("Ошибка добавления пользователя", e);
             lastError = e;
             return Optional.empty();
         }
@@ -207,12 +228,14 @@ public class JDBCRepository {
 //            System.out.println(result);
             if (result == 0) {
                 lastError=new Exception("Не удалось переименовать пользователя");
+                logger.warn("Не удалось переименовать пользователя из: " + oldUserName + " в: " + newUserName);
                 return Optional.empty();
             }
 
         } catch (SQLException e) {
             lastError = e;
-            e.printStackTrace();
+//            e.printStackTrace();
+            logger.warn("Не удалось переименовать пользователя", e);
             return Optional.empty();
         }
 
@@ -230,7 +253,7 @@ public class JDBCRepository {
 
         } catch (SQLException e) {
             lastError = e;
-            e.printStackTrace();
+            logger.warn("Не удалось переименовать пользователя", e);
             return Optional.empty();
         }
         lastError=new Exception("Нет данных");
@@ -279,7 +302,8 @@ public class JDBCRepository {
             }
         } catch (SQLException e) {
             lastError = e;
-            e.printStackTrace();
+//            e.printStackTrace();
+            logger.warn("Не удалось найти UserId", e);
         }
         return id;
 
@@ -316,10 +340,12 @@ public class JDBCRepository {
                     return Optional.of(newUser);
                 }
                 lastError=new Exception(String.format("Поользователя с логином:%s и паролем:%s не существует", login, password));
+                logger.warn(String.format("Поользователя с логином:%s и паролем:%s не существует", login, password));
                 return Optional.empty();
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
+            logger.warn("Не удалось найи пользователя",e);
             lastError = e;
             return Optional.empty();
         }

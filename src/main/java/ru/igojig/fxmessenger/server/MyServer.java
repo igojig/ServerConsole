@@ -1,17 +1,16 @@
 package ru.igojig.fxmessenger.server;
 
-import ru.igojig.fxmessenger.exchanger.impl.UserListExchanger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import ru.igojig.fxmessenger.exchanger.impl.UserExchanger;
+import ru.igojig.fxmessenger.exchanger.impl.UserListExchanger;
 import ru.igojig.fxmessenger.handlers.ClientHandler;
-
-import static ru.igojig.fxmessenger.prefix.Prefix.*;
-
-
 import ru.igojig.fxmessenger.model.User;
 import ru.igojig.fxmessenger.prefix.Prefix;
+import ru.igojig.fxmessenger.repository.JDBCRepository;
 import ru.igojig.fxmessenger.services.auth.AuthService;
 import ru.igojig.fxmessenger.services.auth.impl.JDBCAuthServiceImpl;
-import ru.igojig.fxmessenger.repository.JDBCRepository;
 import ru.igojig.fxmessenger.services.storage.HistoryService;
 import ru.igojig.fxmessenger.services.storage.impl.FileHistoryServiceImpl;
 
@@ -23,7 +22,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static ru.igojig.fxmessenger.prefix.Prefix.*;
+
 public class MyServer {
+
+    private static final Logger logger= LogManager.getLogger(MyServer.class);
 
 
     private final ServerSocket serverSocket;
@@ -41,8 +44,9 @@ public class MyServer {
         try {
             repository = new JDBCRepository();
         } catch (SQLException | ClassNotFoundException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Ошибка подключения к базе данных");
+//            e.printStackTrace();
+            logger.fatal("Драйвер JDBC не загружен", e);
+            throw new RuntimeException("Драйвер JDBC не загружен");
         }
 //        authService = new SimpleAuthServiceImpl();
         authService = new JDBCAuthServiceImpl(repository);
@@ -52,8 +56,9 @@ public class MyServer {
     }
 
     public void start() {
-        System.out.println("Сервер запущен");
-        System.out.println("--------------");
+//        System.out.println("Сервер запущен");
+//        System.out.println("--------------");
+        logger.info("Сервер запущен");
 
         while (true) {
             try {
@@ -80,10 +85,12 @@ public class MyServer {
     }
 
     private Socket waitSocket() throws IOException {
-        System.out.println("Ожидние клиента.....");
+//        System.out.println("Ожидние клиента.....");
+        logger.debug("Ожидние клиента.....");
         Socket socket = serverSocket.accept();
 
-        System.out.println("Клиент подключился");
+//        System.out.println("Клиент подключился");
+        logger.debug("Клиент подключился");
         return socket;
     }
 
@@ -227,8 +234,9 @@ public class MyServer {
 
         serverSocket.close();
 //        ((JDBCRepository) repository).closeConnection();
-        System.out.println("-----------------");
-        System.out.println("Сервер остановлен");
+//        System.out.println("-----------------");
+        logger.info("Сервер остновлен");
+//        System.out.println("Сервер остановлен");
         System.exit(0);
     }
 

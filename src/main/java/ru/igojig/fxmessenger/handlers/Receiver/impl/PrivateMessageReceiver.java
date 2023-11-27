@@ -1,5 +1,7 @@
 package ru.igojig.fxmessenger.handlers.Receiver.impl;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.igojig.fxmessenger.exchanger.Exchanger;
 import ru.igojig.fxmessenger.exchanger.impl.UserExchanger;
 import ru.igojig.fxmessenger.handlers.ClientHandler;
@@ -13,6 +15,8 @@ import static ru.igojig.fxmessenger.prefix.Prefix.*;
 
 public class PrivateMessageReceiver extends Receiver {
 
+    private static final Logger logger= LogManager.getLogger(PrivateMessageReceiver.class);
+
     private static final Prefix REQUIRED_COMMAND = PRIVATE_MSG;
 
     public PrivateMessageReceiver(ClientHandler mainHandler) {
@@ -22,7 +26,7 @@ public class PrivateMessageReceiver extends Receiver {
     @Override
     public boolean receive(Exchanger exchanger) throws IOException {
         if (Receiver.matchCommand(exchanger, REQUIRED_COMMAND)) {
-            System.out.println("Вызываем обработчик PrivateMessage: " + exchanger);
+            logger.debug("Вызываем обработчик PrivateMessage: " + exchanger);
             processPrivateMessage(exchanger);
             return true;
         }
@@ -35,7 +39,7 @@ public class PrivateMessageReceiver extends Receiver {
         User sendToUser=userExchanger.getUser();
 
         if (!mainHandler.sendPrivateMessage(exchanger.getMessage(), sendToUser)) {
-            System.out.println("Пользователя: "+ sendToUser + " не существует");
+            logger.warn("Пользователя: "+ sendToUser + " не существует");
             Exchanger ex=new Exchanger(PRIVATE_MSG_ERR, "пользователь не найден", new UserExchanger(sendToUser));
             mainHandler.writeObj(ex);
         }

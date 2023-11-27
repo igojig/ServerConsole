@@ -1,5 +1,7 @@
 package ru.igojig.fxmessenger.handlers.Receiver.impl;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.igojig.fxmessenger.exchanger.Exchanger;
 import ru.igojig.fxmessenger.exchanger.impl.UserExchanger;
 import ru.igojig.fxmessenger.handlers.ClientHandler;
@@ -14,6 +16,8 @@ import static ru.igojig.fxmessenger.prefix.Prefix.*;
 
 public class RegisterUserReceiver extends Receiver {
 
+    private static final Logger logger= LogManager.getLogger(RegisterUserReceiver.class);
+
     private static final Prefix REQUIRED_COMMAND = REGISTER_REQUEST;
 
     public RegisterUserReceiver(ClientHandler mainHandler) {
@@ -23,7 +27,7 @@ public class RegisterUserReceiver extends Receiver {
     @Override
     public boolean receive(Exchanger exchanger) throws IOException {
         if (Receiver.matchCommand(exchanger, REQUIRED_COMMAND)) {
-            System.out.println("Вызываем обработчик регистрации нового пользователя: " + exchanger);
+            logger.debug("Вызываем обработчик регистрации нового пользователя: " + exchanger);
             registerUser(exchanger);
             return true;
         }
@@ -53,7 +57,7 @@ public class RegisterUserReceiver extends Receiver {
             String dbError= mainHandler.getLastDBError();
             Exchanger exAnswer=new Exchanger(REGISTER_ERR, dbError, null);
             mainHandler.writeObj(exAnswer);
-            System.out.println("Ошибка записи в базу данных: " + dbError);
+            logger.warn("Ошибка добавления пользователя в базу данных: " + userExchanger.getUser() + ":" + dbError);
             return false;
         }
 
@@ -62,8 +66,7 @@ public class RegisterUserReceiver extends Receiver {
         Exchanger ex=new Exchanger(REGISTER_OK, "успешная регистрация", new UserExchanger(mainHandler.user));
         mainHandler.writeObj(ex);
 
-        System.out.println("Новый пользователь зарегистрировался");
-        System.out.println(optUser.get());
+        logger.info("Новый пользователь зарегистрировался" + optUser.get());
         mainHandler.subscribe();
 
         return true;

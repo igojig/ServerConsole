@@ -1,6 +1,8 @@
 package ru.igojig.fxmessenger.handlers.Receiver.impl;
 
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.igojig.fxmessenger.exchanger.Exchanger;
 import ru.igojig.fxmessenger.exchanger.impl.HistoryExchanger;
 import ru.igojig.fxmessenger.handlers.ClientHandler;
@@ -14,6 +16,8 @@ import static ru.igojig.fxmessenger.prefix.Prefix.HISTORY_SAVE;
 
 public class HistorySaveReceiver extends Receiver {
 
+    private static final Logger logger= LogManager.getLogger(HistorySaveReceiver.class);
+
     private static final Prefix REQUIRED_COMMAND = HISTORY_SAVE;
 
     public HistorySaveReceiver(ClientHandler mainHandler) {
@@ -23,7 +27,7 @@ public class HistorySaveReceiver extends Receiver {
     @Override
     public boolean receive(Exchanger ex) throws IOException {
         if (Receiver.matchCommand(ex, REQUIRED_COMMAND)) {
-            System.out.println("Вызываем обработчик сохранения истории: " + ex);
+            logger.debug("Вызываем обработчик сохранения истории: " + ex);
             processSaveHistory(ex);
             return true;
         }
