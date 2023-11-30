@@ -25,7 +25,7 @@ public class ClientHandler {
 
 
     // сколько ждем до авторизации клиента, потом отключаем Socket
-    public static final int WAIT_TIMEOUT = 5*1000;
+    public static final int WAIT_TIMEOUT = 10*1000;
 
 
     private final MyServer myServer;

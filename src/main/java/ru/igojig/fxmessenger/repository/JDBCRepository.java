@@ -56,7 +56,8 @@ public class JDBCRepository {
 
     public Connection getConnection() {
 //        String connectionStr="jdbc:sqlite:users.db";
-        String connectionStr="jdbc:sqlite::resource:users.db";
+//        String connectionStr="jdbc:sqlite::resource:users.db";
+        String connectionStr="jdbc:sqlite:users.db";
 
 //        String dbName = getClass().getResource("/users.db").toString();
 //

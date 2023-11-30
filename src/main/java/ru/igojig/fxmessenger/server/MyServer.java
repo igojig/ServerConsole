@@ -137,7 +137,7 @@ public class MyServer {
         }
     }
 
-    // посылаем когда пльзователь изменил имя
+    // посылаем когда пользователь изменил имя
     synchronized public void sendUpdateUsers() throws IOException {
         List<User> userList=new ArrayList<>();
 
