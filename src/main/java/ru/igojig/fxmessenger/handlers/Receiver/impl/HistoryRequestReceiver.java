@@ -37,9 +37,9 @@ public class HistoryRequestReceiver extends Receiver {
     public void getHistory(Exchanger exchanger){
 //        History history=exchanger.getChatObject(History.class);
         List<String> userHistory=mainHandler.loadHistory();
-        HistoryExchanger h=new HistoryExchanger();
-        h.setHistoryList(userHistory);
-        Exchanger ex=new Exchanger(HISTORY_LOAD, "отправляем историю сообшений", h);
+        HistoryExchanger history=new HistoryExchanger();
+        history.setHistoryList(userHistory);
+        Exchanger ex=new Exchanger(HISTORY_LOAD, "отправляем историю сообщений", history);
         try {
             mainHandler.writeObj(ex);
         } catch (IOException e) {

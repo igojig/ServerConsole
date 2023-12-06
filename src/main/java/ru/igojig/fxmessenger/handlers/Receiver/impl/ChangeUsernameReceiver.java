@@ -35,18 +35,16 @@ public class ChangeUsernameReceiver extends Receiver {
     }
 
     public boolean processChangeName(Exchanger exchanger) throws IOException {
-//        UserExchanger userExchanger=(UserExchanger)exchanger.getChatExchanger();
         UserExchanger userExchanger = exchanger.getChatExchanger(UserExchanger.class);
 
-//        String[] messageParts=Receiver.parseMessage(message, 2);
         String newUserName = userExchanger.getUser().getUsername();
-        Optional<String> optUsername = mainHandler.changeUsername(mainHandler.user.getUsername(), newUserName);
+        Optional<String> optUsername = mainHandler.changeUsername(mainHandler.getUser().getUsername(), newUserName);
         if (optUsername.isPresent()) {
-            logger.info("Пользователь: " + mainHandler.user + " сменил имя на: " + optUsername.get());
+            logger.info("Пользователь: " + mainHandler.getUser() + " сменил имя на: " + optUsername.get());
             mainHandler.broadcastMessage(SERVER_MSG,
-                    "Пользователь: " + mainHandler.user.getUsername() + " сменил имя на: " + optUsername.get(), false);
-            mainHandler.user.setUsername(optUsername.get());
-            Exchanger exAnswer = new Exchanger(CHANGE_USERNAME_OK, null, new UserExchanger(mainHandler.user));
+                    "Пользователь: " + mainHandler.getUser().getUsername() + " сменил имя на: " + optUsername.get(), false);
+            mainHandler.getUser().setUsername(optUsername.get());
+            Exchanger exAnswer = new Exchanger(CHANGE_USERNAME_OK, null, new UserExchanger(mainHandler.getUser()));
             mainHandler.writeObj(exAnswer);
             mainHandler.sendUpdatedUserList();
             return true;

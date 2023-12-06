@@ -15,14 +15,6 @@ abstract public class Receiver {
         this.mainHandler = mainHandler;
     }
 
-//    protected static String[] parseMessage(String message, int parts) {
-//        return message.split("\\s+", parts);
-//    }
-
-//    protected static String[] parseMessage(String message) {
-//        return message.split("\\s+");
-//    }
-
     protected static boolean matchCommand(Exchanger ex, Prefix prefix) {
         return ex.getCommand() == prefix;
     }

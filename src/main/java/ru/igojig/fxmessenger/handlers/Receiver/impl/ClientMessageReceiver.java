@@ -32,7 +32,6 @@ public class ClientMessageReceiver extends Receiver {
     }
 
     private void processClientMessage(Exchanger exchanger) throws IOException {
-
         mainHandler.broadcastMessage(CLIENT_MSG, exchanger.getMessage(), true);
     }
 }

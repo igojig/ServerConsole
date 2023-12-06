@@ -14,7 +14,7 @@ public class FileHistoryServiceImpl implements HistoryService {
 
     private static final Logger logger = LogManager.getLogger(FileHistoryServiceImpl.class);
 
-    public final String pathPrefix = "src/main/resources/history/";
+    public final String pathPrefix = "./history/";
 
     public static final String FILENAME_FORMAT_STRING = "h_%04d.txt";
 
@@ -30,7 +30,7 @@ public class FileHistoryServiceImpl implements HistoryService {
     }
 
     @Override
-    public List<String> getHistory(User user) {
+    public List<String> loadHistory(User user) {
 
         String fullPath=pathPrefix + String.format(FILENAME_FORMAT_STRING, user.getId());
         File file = new File(fullPath);
@@ -42,7 +42,6 @@ public class FileHistoryServiceImpl implements HistoryService {
              LineNumberReader l = new LineNumberReader(fileReader)) {
 
             int numLines = Integer.parseInt(l.readLine());
-//            System.out.println(numLines);
 
             //TODO - проверить!!!! - плучаются null строки
             int from = numLines <= LAST_LINES_COUNT ? 0 : numLines - LAST_LINES_COUNT;
@@ -67,7 +66,7 @@ public class FileHistoryServiceImpl implements HistoryService {
     }
 
     @Override
-    public void setHistory(User user, List<String> history) {
+    public void saveHistory(User user, List<String> history) {
         String fullPath=pathPrefix + String.format(FILENAME_FORMAT_STRING, user.getId());
         File file = new File(fullPath);
         try (FileWriter fileWriter = new FileWriter(file)) {

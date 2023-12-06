@@ -27,7 +27,7 @@ public class HistorySaveReceiver extends Receiver {
     @Override
     public boolean receive(Exchanger ex) throws IOException {
         if (Receiver.matchCommand(ex, REQUIRED_COMMAND)) {
-            logger.debug("Вызываем обработчик сохранения истории: " + ex);
+            logger.debug("Вызываем обработчик сохранения истории: ");
             processSaveHistory(ex);
             return true;
         }

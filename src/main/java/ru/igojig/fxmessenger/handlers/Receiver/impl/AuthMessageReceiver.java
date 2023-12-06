@@ -43,16 +43,13 @@ public class AuthMessageReceiver extends Receiver {
     private boolean processAuthentication(Exchanger ex) throws IOException {
         logger.debug("Аутентификация: " + ex);
 
-//        UserExchanger userExchanger= (UserExchanger) ex.getChatExchanger();
         UserExchanger userExchanger = ex.getChatExchanger(UserExchanger.class);
 
-
-        // пользователь уже залогинен в системе
+        // пользователь уже зарегистрирован в системе
         if (mainHandler.isAlreadyLogin(userExchanger.getUser())) {
             logger.debug("Пользователь: " + userExchanger.getUser() + " уже залогинен в системе");
             Exchanger exAnswer = new Exchanger(AUTH_ERR, "пользователь уже залогинен в системе", new UserExchanger(userExchanger.getUser()));
             mainHandler.writeObj(exAnswer);
-//            mainHandler.write(String.format("%s пользователь: %s уже залогинен в системе", AUTH_ERR_CMD_PREFIX, optionalUsername.get()));
             return false;
         }
 
@@ -60,25 +57,20 @@ public class AuthMessageReceiver extends Receiver {
         if (optUser.isEmpty()) {
             String dbError = mainHandler.getLastDBError();
             logger.debug(dbError +":" +userExchanger.getUser());
-//            mainHandler.write(String.format("%s %s %s", AUTH_ERR_CMD_PREFIX, "пользователь не найден", message));
-
             Exchanger exAnswer = new Exchanger(AUTH_ERR, dbError, new UserExchanger(userExchanger.getUser()));
             mainHandler.writeObj(exAnswer);
             return false;
         }
 
-        mainHandler.user = optUser.get();
+        mainHandler.setUser(optUser.get());
 
-        Exchanger ans = new Exchanger(AUTH_OK, "успешная авторизация", new UserExchanger(mainHandler.user));
+        Exchanger ans = new Exchanger(AUTH_OK, "успешная авторизация", new UserExchanger(mainHandler.getUser()));
 
         mainHandler.writeObj(ans);
         mainHandler.subscribe();
-//        System.out.println("Пользователь: " + optionalUsername.get() + " подключился. ID=" + id);
         logger.info("Пользователь подключился: " + optUser.get());
 
         return true;
 
     }
-
-
 }

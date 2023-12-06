@@ -36,7 +36,7 @@ public enum Prefix {
     HISTORY_SAVE,
     HISTORY_LOAD,
 
-
+    CMD_REQUEST_USERS
 
 
 }

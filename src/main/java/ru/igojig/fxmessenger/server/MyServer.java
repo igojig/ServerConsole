@@ -44,11 +44,9 @@ public class MyServer {
         try {
             repository = new JDBCRepository();
         } catch (SQLException | ClassNotFoundException e) {
-//            e.printStackTrace();
             logger.fatal("Драйвер JDBC не загружен", e);
             throw new RuntimeException("Драйвер JDBC не загружен");
         }
-//        authService = new SimpleAuthServiceImpl();
         authService = new JDBCAuthServiceImpl(repository);
         historyService=new FileHistoryServiceImpl();
 
@@ -56,25 +54,15 @@ public class MyServer {
     }
 
     public void start() {
-//        System.out.println("Сервер запущен");
-//        System.out.println("--------------");
         logger.info("Сервер запущен");
 
         while (true) {
             try {
                 waitAndEstablishConnection();
-
             } catch (IOException e) {
                 e.printStackTrace();
-            } finally {
-//                try {
-//                    serverSocket.close();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
             }
         }
-
     }
 
     private void waitAndEstablishConnection() throws IOException {
@@ -85,11 +73,9 @@ public class MyServer {
     }
 
     private Socket waitSocket() throws IOException {
-//        System.out.println("Ожидние клиента.....");
-        logger.debug("Ожидние клиента.....");
+        logger.debug("Ожидание клиента.....");
         Socket socket = serverSocket.accept();
 
-//        System.out.println("Клиент подключился");
         logger.debug("Клиент подключился");
         return socket;
     }
@@ -101,7 +87,7 @@ public class MyServer {
 
     synchronized public void subscribe(ClientHandler clientHandler) throws IOException {
         clientHandlers.add(clientHandler);
-        sendLoggedUsers(true, clientHandler);
+//        sendLoggedUsers(true, clientHandler);
     }
 
     synchronized public void unsubscribe(ClientHandler clientHandler) throws IOException {
@@ -114,7 +100,7 @@ public class MyServer {
      * @param clientHandler -
      * @throws IOException
      */
-    synchronized private void sendLoggedUsers(boolean mode, ClientHandler clientHandler) throws IOException {
+    synchronized public void sendLoggedUsers(boolean mode, ClientHandler clientHandler) throws IOException {
 
         UserListExchanger userListExchanger =new UserListExchanger();
 
@@ -155,10 +141,8 @@ public class MyServer {
     }
 
     synchronized public boolean isAlreadyLogin(User user) {
-//        return clientHandlers.stream().anyMatch(o -> o.user.equals(user));
         Optional<User> optionalUser=authService.findUserByLoginAndPassword(user.getLogin(), user.getPassword());
-        return optionalUser.filter(value -> clientHandlers.stream().anyMatch(o -> o.user.getId().equals(value.getId()))).isPresent();
-
+        return optionalUser.filter(value -> clientHandlers.stream().anyMatch(handler -> handler.getUser().getId().equals(value.getId()))).isPresent();
     }
 
     synchronized public boolean sendPrivateMessage(String message, ClientHandler sender, User sendToUser) throws IOException {
@@ -166,7 +150,7 @@ public class MyServer {
             if (clientHandler.getUser().getId().equals(sendToUser.getId())) {
                 clientHandler.sendMessage(PRIVATE_MSG, message, new UserExchanger(sender.getUser()));
 
-                //дублируем сообшение себе
+                //дублируем сообщение себе
                 sender.sendMessage(CLIENT_MSG, message + "->" + sendToUser.getUsername(), new UserExchanger(sender.getUser()));
                 return true;
             }
@@ -194,69 +178,32 @@ public class MyServer {
             }
         }
     }
-//
-//    /**
-//     * @param message
-//     * @param sender
-//     * @param mode    - true - сообщение рассылается всем, false - всем кроме себя
-//     * @throws IOException
-//     */
-//    synchronized public void broadcastServerMessage(String message, ClientHandler sender, boolean mode) throws IOException {
-//
-////        List<ClientHandler> list = getLoggedInUsers();
-//
-//        if (mode) {
-//            for (ClientHandler clientHandler : clientHandlers) {
-//                clientHandler.sendMessage(SERVER_MSG, message, new UserExchanger(sender.getUser()));
-//            }
-//        } else {
-//            for (ClientHandler clientHandler : clientHandlers) {
-//                if (clientHandler != sender) {
-//                    clientHandler.sendMessage(SERVER_MSG, message, new UserExchanger(sender.getUser()));
-//                }
-//            }
-//        }
-
-//        for (ClientHandler handler : clientHandlers) {
-//            if (handler.isLoggedIn()) {
-//                handler.sendClientMessage(sender.getUserName(), message, CLIENT_MSG_CMD_PREFIX);
-//            }
-//        }
-//    }
-
 
     synchronized public void stop() throws IOException {
-
 
         for (ClientHandler clientHandler : clientHandlers) {
             clientHandler.closeSocket();
         }
 
         serverSocket.close();
-//        ((JDBCRepository) repository).closeConnection();
-//        System.out.println("-----------------");
         logger.info("Сервер остновлен");
-//        System.out.println("Сервер остановлен");
+
         System.exit(0);
     }
 
     public AuthService getAuthService() {
         return authService;
     }
-//
-//    List<ClientHandler> getLoggedInUsers() {
-//        return clientHandlers.stream().filter(ClientHandler::isLoggedIn).toList();
-//    }
 
     public String getLastDBError() {
         return authService.getLastDBError();
     }
 
     synchronized public List<String> getHistory(ClientHandler clientHandler) {
-        return historyService.getHistory(clientHandler.getUser());
+        return historyService.loadHistory(clientHandler.getUser());
     }
 
     public void saveHistory(List<String> history, ClientHandler clientHandler) {
-        historyService.setHistory(clientHandler.getUser(), history);
+        historyService.saveHistory(clientHandler.getUser(), history);
     }
 }

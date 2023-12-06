@@ -61,9 +61,10 @@ public class RegisterUserReceiver extends Receiver {
             return false;
         }
 
-        mainHandler.user=optUser.get();
+//        mainHandler.user=optUser.get();
+        mainHandler.setUser(optUser.get());
 
-        Exchanger ex=new Exchanger(REGISTER_OK, "успешная регистрация", new UserExchanger(mainHandler.user));
+        Exchanger ex=new Exchanger(REGISTER_OK, "успешная регистрация", new UserExchanger(mainHandler.getUser()));
         mainHandler.writeObj(ex);
 
         logger.info("Новый пользователь зарегистрировался" + optUser.get());

@@ -1,5 +1,7 @@
 package ru.igojig.fxmessenger.handlers;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.igojig.fxmessenger.exchanger.ChatExchanger;
@@ -25,31 +27,23 @@ public class ClientHandler {
 
 
     // сколько ждем до авторизации клиента, потом отключаем Socket
-    public static final int WAIT_TIMEOUT = 10*1000;
+    public static final int WAIT_USER_AUTHORISATION_TIMEOUT = 10 * 1000;
 
 
     private final MyServer myServer;
     private final Socket clientSocket;
 
-//    private final DataInputStream in;
-//    private final DataOutputStream out;
+    private final ObjectInputStream objectInputStream;
+    private final ObjectOutputStream objectOutputStream;
 
-    ObjectInputStream objectInputStream;
-    ObjectOutputStream objectOutputStream;
-
-    HistoryService historyService;
+//    HistoryService historyService;
 
 
-    // Наш будущий объект User
-//    volatile public String userName;
-//    volatile public int id;
+    @Getter
+    @Setter
+    volatile private User user;
 
-    volatile public User user;
-
-
-//    volatile public boolean isLoggedIn = false;
-
-    // поток обработки сообшений
+    // поток обработки сообщений
     private Thread handleThread;
 
     // поток-сторож для ожидания 120 сек и отключения хендлера
@@ -62,14 +56,10 @@ public class ClientHandler {
         this.myServer = myServer;
         this.clientSocket = clientSocket;
 
-//        this.in = new DataInputStream(clientSocket.getInputStream());
-//        this.out = new DataOutputStream(clientSocket.getOutputStream());
-
         objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
         objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
 
-
-        //запускам поток-сторож для ожидания подключения в течение 120 сек. (WAIT_TIMEOUT)
+        //запускаем поток-сторож для ожидания подключения в течение 120 сек. (WAIT_USER_AUTHORISATION_TIMEOUT)
         startWaitTimeOutThread();
 
         Receiver[] receivers = {
@@ -82,6 +72,7 @@ public class ClientHandler {
                 new ChangeUsernameReceiver(this),
                 new HistoryRequestReceiver(this),
                 new HistorySaveReceiver(this),
+                new RequestUsersReciever(this),
 
                 // должна быть последней строкой
                 new UnknownMessageReceiver(this),
@@ -106,23 +97,19 @@ public class ClientHandler {
     private void startWaitTimeOutThread() {
         waitTimeOutThread = new Thread(() -> {
             try {
-//                System.out.println("Поток-сторож запущен: " + this);
                 logger.debug("Поток-сторож запущен: " + this);
-                Thread.sleep(WAIT_TIMEOUT);
+                Thread.sleep(WAIT_USER_AUTHORISATION_TIMEOUT);
                 if (user == null) {
-                    logger.debug("Поток-сторож определил что никто не авторизовался за " + WAIT_TIMEOUT / 1000 + "сек. Отключаем клиента");
-                    //TODO
-                    // out.writeUTF(CMD_SHUT_DOWN_CLIENT);
-                    Exchanger ex = new Exchanger(Prefix.CMD_SHUT_DOWN_CLIENT, "нткто не подключился. Отключаем клиента", null);
-                    objectOutputStream.reset();
-                    objectOutputStream.writeObject(ex);
+                    logger.debug("Поток-сторож определил что никто не авторизовался за " + WAIT_USER_AUTHORISATION_TIMEOUT / 1000 + "сек. Отключаем клиента");
+                    Exchanger ex = new Exchanger(Prefix.CMD_SHUT_DOWN_CLIENT, "никто не подключился. Отключаем клиента", null);
+//                    objectOutputStream.reset();
+//                    objectOutputStream.writeObject(ex);
+                    writeObj(ex);
                     closeConnection();
                 } else {
                     logger.debug("Поток-сторож определил что подключен пользователь: " + user + ". Продолжаем работу");
                 }
             } catch (InterruptedException | IOException e) {
-//                e.printStackTrace();
-//                System.out.println("Поток-сторож выбросил ошибку, пользователь: " + user);
                 logger.warn("Поток-сторож выбросил ошибку, пользователь: " + user, e);
             }
         });
@@ -131,53 +118,26 @@ public class ClientHandler {
     }
 
     public void doHandle() {
-
         handleThread = new Thread(() -> {
             try {
                 while (true) {
-//                    String message = in.readUTF();
-
-                    Object o = objectInputStream.readObject();
-//                    System.out.println(o);
-                    Exchanger ex = (Exchanger) o;
-                    notifyReceiver(ex);
+                    Exchanger exchanger = (Exchanger) objectInputStream.readObject();
+                    notifyReceiver(exchanger);
                 }
             } catch (IOException e) {
                 logger.error("Ошибка ввода-вывода в doHandle()", e);
-//                try {
-//                    if (!clientSocket.isClosed()) {
-//                        closeConnection();
-//                    }
-//                } catch (IOException ex) {
-//                    logger.error("Ошибка закрытия сокета", ex);
-//                }
             } catch (ClassNotFoundException e) {
                 logger.error("Ошибка ClassNotFoundException в doHandle()", e);
             }
         });
-//        handleThread.setDaemon(true);
         handleThread.start();
     }
 
-
-//    public void write(String message) throws IOException {
-//        out.writeUTF(message);
-//    }
-
-
     public void sendMessage(Prefix prefix, String message, ChatExchanger chatExchanger) throws IOException {
         Exchanger ex = new Exchanger(prefix, message, chatExchanger);
-
         objectOutputStream.reset();
         objectOutputStream.writeObject(ex);
     }
-
-//    public void sendServerMessage(Prefix messageType, String message, ChatObject chatObject) throws IOException {
-//        Exchanger ex=new Exchanger(messageType, message, chatObject);
-//
-//        objectOutputStream.reset();
-//        objectOutputStream.writeObject(ex);
-//    }
 
     public void writeObj(Exchanger exAnswer) throws IOException {
         objectOutputStream.reset();
@@ -188,40 +148,22 @@ public class ClientHandler {
         myServer.broadcastMessage(prefix, message, this, mode);
     }
 
-//    public void broadcastServerMessage(String message, boolean mode) throws IOException {
-//        myServer.broadcastServerMessage(message, this, mode);
-//    }
-
     public boolean sendPrivateMessage(String message, User sendToUser) throws IOException {
         return myServer.sendPrivateMessage(message, this, sendToUser);
     }
 
-
     public void closeSocket() throws IOException {
-
-//        handleThread.interrupt();
-
         objectOutputStream.close();
         objectInputStream.close();
         clientSocket.close();
     }
 
-//    public String getUserName() {
-//        return userName;
-
-//    }
-
     public void closeConnection() throws IOException {
         myServer.unsubscribe(this);
-        waitTimeOutThread.interrupt();
-
         closeSocket();
-
-//        System.out.println("Пользователь: " + user + " вышел из системы");
         logger.info("Пользователь: " + user + " вышел из системы");
         user = null;
     }
-
 
     public void subscribe() throws IOException {
         myServer.subscribe(this);
@@ -231,14 +173,9 @@ public class ClientHandler {
         return myServer.isAlreadyLogin(user);
     }
 
-//    public Optional<String> getUsernameByLoginAndPassword(String login, String password) {
-//        return myServer.getAuthService().getUsernameByLoginAndPassword(login, password);
-//    }
-
     public Optional<String> changeUsername(String oldUserName, String newUserName) {
         return myServer.getAuthService().renameUser(oldUserName, newUserName);
     }
-
 
     public Optional<User> addUser(String userName, String login, String password) {
         return myServer.getAuthService().addUser(userName, login, password);
@@ -251,10 +188,6 @@ public class ClientHandler {
     public void sendUpdatedUserList() throws IOException {
         myServer.sendUpdateUsers();
     }
-//
-//    public int getUserIdByLoginAndPassword(String login, String password) {
-//       return myServer.getAuthService().getUserIdByLoginAndPassword(login, password);
-//    }
 
     public Optional<User> findUserByLoginAndPassword(String login, String password) {
         return myServer.getAuthService().findUserByLoginAndPassword(login, password);
@@ -268,12 +201,15 @@ public class ClientHandler {
         return user;
     }
 
-
     public List<String> loadHistory() {
         return myServer.getHistory(this);
     }
 
     public void saveHistory(List<String> history) {
         myServer.saveHistory(history, this);
+    }
+
+    public void sendLoggedUsers() throws IOException {
+        myServer.sendLoggedUsers(true, this);
     }
 }
