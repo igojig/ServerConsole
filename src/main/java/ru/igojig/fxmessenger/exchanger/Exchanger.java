@@ -17,27 +17,10 @@ public class Exchanger implements Serializable {
     private Prefix command;
     private String message;
 
-//    @Getter(AccessLevel.NONE)
     private ChatExchanger chatExchanger;
 
     public <T extends ChatExchanger> T getChatExchanger(Class<T> tClass) {
         return tClass.cast(chatExchanger);
     }
-
-//    public <T extends ChatObject> T foo(Class<T> c) {
-//        var r = chatObject.getClass();
-//        var t = c.cast(chatObject);
-//        return t;
-//    }
-//
-//    public void bar() {
-//        var r = foo(History.class);
-//    }
-
-//
-//    public ChatObject getChatObject() {
-//        return chatObject;
-//    }
-
 
 }

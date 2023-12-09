@@ -25,52 +25,52 @@ public class AuthMessageReceiver extends Receiver {
     }
 
     @Override
-    public boolean receive(Exchanger ex) throws IOException {
-        if (Receiver.matchCommand(ex, REQUIRED_COMMAND)) {
-            logger.debug("Вызываем обработчик авторизации: " + ex);
-            authenticateUser(ex);
+    public boolean receive(Exchanger exchanger) throws IOException {
+        if (Receiver.matchCommand(exchanger, REQUIRED_COMMAND)) {
+            logger.debug("Вызываем обработчик авторизации: " + exchanger);
+            authenticateUser(exchanger);
             return true;
         }
         return false;
     }
 
     private void authenticateUser(Exchanger ex) throws IOException {
-
         // тут должна быть логика для отработки результатов
         processAuthentication(ex);
     }
 
-    private boolean processAuthentication(Exchanger ex) throws IOException {
-        logger.debug("Аутентификация: " + ex);
+    private boolean processAuthentication(Exchanger exchanger) throws IOException {
+        logger.debug("Аутентификация: " + exchanger);
 
-        UserExchanger userExchanger = ex.getChatExchanger(UserExchanger.class);
+        UserExchanger userExchanger = exchanger.getChatExchanger(UserExchanger.class);
 
         // пользователь уже зарегистрирован в системе
         if (mainHandler.isAlreadyLogin(userExchanger.getUser())) {
-            logger.debug("Пользователь: " + userExchanger.getUser() + " уже залогинен в системе");
-            Exchanger exAnswer = new Exchanger(AUTH_ERR, "пользователь уже залогинен в системе", new UserExchanger(userExchanger.getUser()));
-            mainHandler.writeObj(exAnswer);
+            logger.debug("Пользователь: " + userExchanger.getUser() + " уже зарегистрирован в системе");
+            mainHandler.sendMessage(AUTH_ERR, "пользователь уже зарегистрирован в системе", new UserExchanger(userExchanger.getUser()));
+//            Exchanger response = new Exchanger(AUTH_ERR, "пользователь уже зарегистрирован в системе", new UserExchanger(userExchanger.getUser()));
+//            mainHandler.writeObj(response);
             return false;
         }
 
-        Optional<User> optUser = mainHandler.findUserByLoginAndPassword(userExchanger.getUser().getLogin(), userExchanger.getUser().getPassword());
-        if (optUser.isEmpty()) {
+        Optional<User> user = mainHandler.findUserByLoginAndPassword(userExchanger.getUser().getLogin(), userExchanger.getUser().getPassword());
+        if (user.isEmpty()) {
             String dbError = mainHandler.getLastDBError();
             logger.debug(dbError +":" +userExchanger.getUser());
-            Exchanger exAnswer = new Exchanger(AUTH_ERR, dbError, new UserExchanger(userExchanger.getUser()));
-            mainHandler.writeObj(exAnswer);
+            mainHandler.sendMessage(AUTH_ERR, dbError, new UserExchanger(userExchanger.getUser()));
+//            Exchanger response = new Exchanger(AUTH_ERR, dbError, new UserExchanger(userExchanger.getUser()));
+//            mainHandler.writeObj(response);
             return false;
         }
 
-        mainHandler.setUser(optUser.get());
+        mainHandler.setUser(user.get());
 
-        Exchanger ans = new Exchanger(AUTH_OK, "успешная авторизация", new UserExchanger(mainHandler.getUser()));
-
-        mainHandler.writeObj(ans);
         mainHandler.subscribe();
-        logger.info("Пользователь подключился: " + optUser.get());
+        mainHandler.sendMessage(AUTH_OK, "успешная авторизация", new UserExchanger(mainHandler.getUser()));
+//        Exchanger response = new Exchanger(AUTH_OK, "успешная авторизация", new UserExchanger(mainHandler.getUser()));
+//        mainHandler.writeObj(response);
+        logger.info("Пользователь подключился: " + user.get());
 
         return true;
-
     }
 }

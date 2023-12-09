@@ -11,33 +11,25 @@ import ru.igojig.fxmessenger.handlers.Receiver.impl.*;
 import ru.igojig.fxmessenger.model.User;
 import ru.igojig.fxmessenger.prefix.Prefix;
 import ru.igojig.fxmessenger.server.MyServer;
-import ru.igojig.fxmessenger.services.storage.HistoryService;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 public class ClientHandler {
 
-
     private static final Logger logger = LogManager.getLogger(ClientHandler.class);
-
 
     // сколько ждем до авторизации клиента, потом отключаем Socket
     public static final int WAIT_USER_AUTHORISATION_TIMEOUT = 10 * 1000;
-
 
     private final MyServer myServer;
     private final Socket clientSocket;
 
     private final ObjectInputStream objectInputStream;
     private final ObjectOutputStream objectOutputStream;
-
-//    HistoryService historyService;
-
 
     @Getter
     @Setter
@@ -72,18 +64,19 @@ public class ClientHandler {
                 new ChangeUsernameReceiver(this),
                 new HistoryRequestReceiver(this),
                 new HistorySaveReceiver(this),
-                new RequestUsersReciever(this),
+                new RequestUsersReceiver(this),
 
                 // должна быть последней строкой
                 new UnknownMessageReceiver(this),
         };
 
-        registerReceiver(receivers);
+        registerReceivers(receivers);
 
     }
 
-    public void registerReceiver(Receiver... receiver) {
-        receiverList.addAll(Arrays.asList(receiver));
+    public void registerReceivers(Receiver... receivers) {
+        receiverList.addAll(List.of(receivers));
+//        receiverList.addAll(Arrays.asList(receiver));
     }
 
     public void notifyReceiver(Exchanger exchanger) throws IOException {
@@ -134,14 +127,13 @@ public class ClientHandler {
     }
 
     public void sendMessage(Prefix prefix, String message, ChatExchanger chatExchanger) throws IOException {
-        Exchanger ex = new Exchanger(prefix, message, chatExchanger);
-        objectOutputStream.reset();
-        objectOutputStream.writeObject(ex);
+        Exchanger exchanger = new Exchanger(prefix, message, chatExchanger);
+        writeObj(exchanger);
     }
 
-    public void writeObj(Exchanger exAnswer) throws IOException {
+    private void writeObj(Exchanger exchanger) throws IOException {
         objectOutputStream.reset();
-        objectOutputStream.writeObject(exAnswer);
+        objectOutputStream.writeObject(exchanger);
     }
 
     public void broadcastMessage(Prefix prefix, String message, boolean mode) throws IOException {
@@ -185,10 +177,6 @@ public class ClientHandler {
         myServer.stop();
     }
 
-    public void sendUpdatedUserList() throws IOException {
-        myServer.sendUpdateUsers();
-    }
-
     public Optional<User> findUserByLoginAndPassword(String login, String password) {
         return myServer.getAuthService().findUserByLoginAndPassword(login, password);
     }
@@ -197,16 +185,16 @@ public class ClientHandler {
         return myServer.getLastDBError();
     }
 
-    public User getUser() {
-        return user;
-    }
-
     public List<String> loadHistory() {
         return myServer.getHistory(this);
     }
 
     public void saveHistory(List<String> history) {
         myServer.saveHistory(history, this);
+    }
+
+    public void sendUpdatedUserList() throws IOException {
+        myServer.sendUpdateUsers();
     }
 
     public void sendLoggedUsers() throws IOException {

@@ -7,9 +7,10 @@ import ru.igojig.fxmessenger.prefix.Prefix;
 import java.io.IOException;
 
 abstract public class Receiver {
+
     protected ClientHandler mainHandler;
 
-    public abstract boolean receive(Exchanger ex) throws IOException;
+    public abstract boolean receive(Exchanger exchanger) throws IOException;
 
     public Receiver(ClientHandler mainHandler) {
         this.mainHandler = mainHandler;

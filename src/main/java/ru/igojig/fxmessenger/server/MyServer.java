@@ -1,5 +1,6 @@
 package ru.igojig.fxmessenger.server;
 
+import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -26,29 +27,29 @@ import static ru.igojig.fxmessenger.prefix.Prefix.*;
 
 public class MyServer {
 
-    private static final Logger logger= LogManager.getLogger(MyServer.class);
-
+    private static final Logger logger = LogManager.getLogger(MyServer.class);
 
     private final ServerSocket serverSocket;
+
+    @Getter
     private final AuthService authService;
     private final List<ClientHandler> clientHandlers;
 
-    JDBCRepository repository;
+    private final JDBCRepository repository;
 
-    HistoryService historyService;
+    private final HistoryService historyService;
 
     public MyServer(int port) throws IOException {
         clientHandlers = new ArrayList<>();
-
 
         try {
             repository = new JDBCRepository();
         } catch (SQLException | ClassNotFoundException e) {
             logger.fatal("Драйвер JDBC не загружен", e);
-            throw new RuntimeException("Драйвер JDBC не загружен");
+            throw new RuntimeException(e);
         }
         authService = new JDBCAuthServiceImpl(repository);
-        historyService=new FileHistoryServiceImpl();
+        historyService = new FileHistoryServiceImpl();
 
         serverSocket = new ServerSocket(port);
     }
@@ -67,9 +68,7 @@ public class MyServer {
 
     private void waitAndEstablishConnection() throws IOException {
         Socket socket = waitSocket();
-
         establishConnection(socket);
-
     }
 
     private Socket waitSocket() throws IOException {
@@ -102,46 +101,49 @@ public class MyServer {
      */
     synchronized public void sendLoggedUsers(boolean mode, ClientHandler clientHandler) throws IOException {
 
-        UserListExchanger userListExchanger =new UserListExchanger();
+        UserListExchanger userListExchanger = new UserListExchanger();
+        List<User> userList = new ArrayList<>();
 
         if (mode) {
             userListExchanger.setMode(UserListExchanger.Mode.ADD);
         } else {
             userListExchanger.setMode(UserListExchanger.Mode.REMOVE);
         }
+
         userListExchanger.setChangedUser(clientHandler.getUser());
 
-        List<User> userList=new ArrayList<>();
         for (ClientHandler handler : clientHandlers) {
-                userList.add(handler.getUser());
+            userList.add(handler.getUser());
         }
 
         userListExchanger.setUserList(userList);
 
         for (ClientHandler handler : clientHandlers) {
-                handler.sendMessage(LOGGED_USERS, "обновление списка пользователей", userListExchanger);
+            handler.sendMessage(LOGGED_USERS, "обновление списка пользователей", userListExchanger);
         }
     }
 
     // посылаем когда пользователь изменил имя
     synchronized public void sendUpdateUsers() throws IOException {
-        List<User> userList=new ArrayList<>();
+
+        UserListExchanger userListExchanger = new UserListExchanger();
+        List<User> userList = new ArrayList<>();
+
 
         for (ClientHandler clientHandler : clientHandlers) {
-                userList.add(clientHandler.getUser());
+            userList.add(clientHandler.getUser());
         }
 
-        UserListExchanger userListExchanger =new UserListExchanger();
         userListExchanger.setUserList(userList);
         userListExchanger.setMode(UserListExchanger.Mode.CHANGE_NAME);
 
         for (ClientHandler clientHandler : clientHandlers) {
-                clientHandler.sendMessage(CHANGE_USERNAME_NEW_LIST, "пользователь сменил имя", userListExchanger);
+            clientHandler.sendMessage(CHANGE_USERNAME_NEW_LIST, "пользователь сменил имя", userListExchanger);
         }
     }
 
     synchronized public boolean isAlreadyLogin(User user) {
-        Optional<User> optionalUser=authService.findUserByLoginAndPassword(user.getLogin(), user.getPassword());
+        Optional<User> optionalUser = authService.findUserByLoginAndPassword(user.getLogin(), user.getPassword());
         return optionalUser.filter(value -> clientHandlers.stream().anyMatch(handler -> handler.getUser().getId().equals(value.getId()))).isPresent();
     }
 
@@ -151,7 +153,7 @@ public class MyServer {
                 clientHandler.sendMessage(PRIVATE_MSG, message, new UserExchanger(sender.getUser()));
 
                 //дублируем сообщение себе
-                sender.sendMessage(CLIENT_MSG, message + "->" + sendToUser.getUsername(), new UserExchanger(sender.getUser()));
+                sender.sendMessage(CLIENT_MSG, message + "-->[" + sendToUser.getUsername()+ "]", new UserExchanger(sender.getUser()));
                 return true;
             }
         }
@@ -170,11 +172,12 @@ public class MyServer {
             for (ClientHandler clientHandler : clientHandlers) {
                 clientHandler.sendMessage(prefix, message, new UserExchanger(sender.getUser()));
             }
-        } else {
-            for (ClientHandler clientHandler : clientHandlers) {
-                if (clientHandler != sender) {
-                    clientHandler.sendMessage(prefix, message, new UserExchanger(sender.getUser()));
-                }
+            return;
+        }
+
+        for (ClientHandler clientHandler : clientHandlers) {
+            if (clientHandler != sender) {
+                clientHandler.sendMessage(prefix, message, new UserExchanger(sender.getUser()));
             }
         }
     }
@@ -186,16 +189,12 @@ public class MyServer {
         }
 
         serverSocket.close();
-        logger.info("Сервер остновлен");
+        logger.info("Сервер остановлен");
 
         System.exit(0);
     }
 
-    public AuthService getAuthService() {
-        return authService;
-    }
-
-    public String getLastDBError() {
+    synchronized public String getLastDBError() {
         return authService.getLastDBError();
     }
 
@@ -203,7 +202,7 @@ public class MyServer {
         return historyService.loadHistory(clientHandler.getUser());
     }
 
-    public void saveHistory(List<String> history, ClientHandler clientHandler) {
+    synchronized public void saveHistory(List<String> history, ClientHandler clientHandler) {
         historyService.saveHistory(clientHandler.getUser(), history);
     }
 }

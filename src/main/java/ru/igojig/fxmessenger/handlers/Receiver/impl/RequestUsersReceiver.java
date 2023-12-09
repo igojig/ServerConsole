@@ -9,16 +9,15 @@ import ru.igojig.fxmessenger.prefix.Prefix;
 
 import java.io.IOException;
 
-import static ru.igojig.fxmessenger.prefix.Prefix.CMD_REQUEST_USERS;
-import static ru.igojig.fxmessenger.prefix.Prefix.REGISTER_REQUEST;
+import static ru.igojig.fxmessenger.prefix.Prefix.CMD_REQUEST_USERS_LIST;
 
-public class RequestUsersReciever extends Receiver {
+public class RequestUsersReceiver extends Receiver {
 
-    private static final Logger logger= LogManager.getLogger(RequestUsersReciever.class);
+    private static final Logger logger= LogManager.getLogger(RequestUsersReceiver.class);
 
-    private static final Prefix REQUIRED_COMMAND = CMD_REQUEST_USERS;
+    private static final Prefix REQUIRED_COMMAND = CMD_REQUEST_USERS_LIST;
 
-    public RequestUsersReciever(ClientHandler mainHandler){
+    public RequestUsersReceiver(ClientHandler mainHandler){
         super(mainHandler);
     }
 

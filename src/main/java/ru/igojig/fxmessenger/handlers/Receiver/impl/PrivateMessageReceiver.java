@@ -39,8 +39,9 @@ public class PrivateMessageReceiver extends Receiver {
 
         if (!mainHandler.sendPrivateMessage(exchanger.getMessage(), sendToUser)) {
             logger.warn("Пользователя: "+ sendToUser + " не существует");
-            Exchanger ex=new Exchanger(PRIVATE_MSG_ERR, "пользователь не найден", new UserExchanger(sendToUser));
-            mainHandler.writeObj(ex);
+            mainHandler.sendMessage(PRIVATE_MSG_ERR, "пользователь не найден", new UserExchanger(sendToUser));
+//            Exchanger response=new Exchanger(PRIVATE_MSG_ERR, "пользователь не найден", new UserExchanger(sendToUser));
+//            mainHandler.writeObj(response);
         }
     }
 }

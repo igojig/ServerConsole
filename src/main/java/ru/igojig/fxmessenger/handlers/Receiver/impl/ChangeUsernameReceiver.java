@@ -37,24 +37,26 @@ public class ChangeUsernameReceiver extends Receiver {
     public boolean processChangeName(Exchanger exchanger) throws IOException {
         UserExchanger userExchanger = exchanger.getChatExchanger(UserExchanger.class);
 
-        String newUserName = userExchanger.getUser().getUsername();
-        Optional<String> optUsername = mainHandler.changeUsername(mainHandler.getUser().getUsername(), newUserName);
-        if (optUsername.isPresent()) {
-            logger.info("Пользователь: " + mainHandler.getUser() + " сменил имя на: " + optUsername.get());
+        String oldUserName = userExchanger.getUser().getUsername();
+        Optional<String> newUsername = mainHandler.changeUsername(mainHandler.getUser().getUsername(), oldUserName);
+        if (newUsername.isPresent()) {
+            logger.info("Пользователь: " + mainHandler.getUser() + " сменил имя на: " + newUsername.get());
             mainHandler.broadcastMessage(SERVER_MSG,
-                    "Пользователь: " + mainHandler.getUser().getUsername() + " сменил имя на: " + optUsername.get(), false);
-            mainHandler.getUser().setUsername(optUsername.get());
-            Exchanger exAnswer = new Exchanger(CHANGE_USERNAME_OK, null, new UserExchanger(mainHandler.getUser()));
-            mainHandler.writeObj(exAnswer);
+                    "Пользователь: " + mainHandler.getUser().getUsername() + " сменил имя на: " + newUsername.get(), false);
+            mainHandler.getUser().setUsername(newUsername.get());
+
+            mainHandler.sendMessage(CHANGE_USERNAME_OK, null, new UserExchanger(mainHandler.getUser()));
+//            Exchanger response = new Exchanger(CHANGE_USERNAME_OK, null, new UserExchanger(mainHandler.getUser()));
+//            mainHandler.writeObj(response);
             mainHandler.sendUpdatedUserList();
             return true;
-        } else {
-            String dbError = mainHandler.getLastDBError();
-            Exchanger exAnswer = new Exchanger(CHANGE_USERNAME_ERR, dbError, null);
-            mainHandler.writeObj(exAnswer);
-            logger.debug("Не удалось сменить имя: " + exchanger + dbError);
-            return false;
         }
-    }
 
+        String dbError = mainHandler.getLastDBError();
+        mainHandler.sendMessage(CHANGE_USERNAME_ERR, dbError, null);
+//        Exchanger response = new Exchanger(CHANGE_USERNAME_ERR, dbError, null);
+//        mainHandler.writeObj(response);
+        logger.debug("Не удалось сменить имя: " + exchanger + dbError);
+        return false;
+    }
 }

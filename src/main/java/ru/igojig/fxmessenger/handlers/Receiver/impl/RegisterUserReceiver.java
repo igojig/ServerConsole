@@ -16,7 +16,7 @@ import static ru.igojig.fxmessenger.prefix.Prefix.*;
 
 public class RegisterUserReceiver extends Receiver {
 
-    private static final Logger logger= LogManager.getLogger(RegisterUserReceiver.class);
+    private static final Logger logger = LogManager.getLogger(RegisterUserReceiver.class);
 
     private static final Prefix REQUIRED_COMMAND = REGISTER_REQUEST;
 
@@ -44,34 +44,32 @@ public class RegisterUserReceiver extends Receiver {
 
     private boolean doRegister(Exchanger exchanger) throws IOException {
 
-//        UserExchanger userExchanger=(UserExchanger)exchanger.getChatExchanger();
-        UserExchanger userExchanger=exchanger.getChatExchanger(UserExchanger.class);
+        UserExchanger userExchanger = exchanger.getChatExchanger(UserExchanger.class);
 
-        String login=userExchanger.getUser().getLogin();
-        String password=userExchanger.getUser().getPassword();
-        String username=userExchanger.getUser().getUsername();
+        String login = userExchanger.getUser().getLogin();
+        String password = userExchanger.getUser().getPassword();
+        String username = userExchanger.getUser().getUsername();
 
-        Optional<User> optUser=mainHandler.addUser(username, login, password);
+        Optional<User> user = mainHandler.addUser(username, login, password);
 
-        if(optUser.isEmpty()){
-            String dbError= mainHandler.getLastDBError();
-            Exchanger exAnswer=new Exchanger(REGISTER_ERR, dbError, null);
-            mainHandler.writeObj(exAnswer);
+        if (user.isEmpty()) {
+            String dbError = mainHandler.getLastDBError();
+//            Exchanger registerResponse = new Exchanger(REGISTER_ERR, dbError, null);
+//            mainHandler.writeObj(registerResponse);
+            mainHandler.sendMessage(REGISTER_ERR, dbError, null);
             logger.warn("Ошибка добавления пользователя в базу данных: " + userExchanger.getUser() + ":" + dbError);
             return false;
         }
 
-//        mainHandler.user=optUser.get();
-        mainHandler.setUser(optUser.get());
+        mainHandler.setUser(user.get());
 
-        Exchanger ex=new Exchanger(REGISTER_OK, "успешная регистрация", new UserExchanger(mainHandler.getUser()));
-        mainHandler.writeObj(ex);
-
-        logger.info("Новый пользователь зарегистрировался" + optUser.get());
         mainHandler.subscribe();
+        mainHandler.sendMessage(REGISTER_OK, "успешная регистрация", new UserExchanger(mainHandler.getUser()));
+//        Exchanger response = new Exchanger(REGISTER_OK, "успешная регистрация", new UserExchanger(mainHandler.getUser()));
+//        mainHandler.writeObj(response);
+
+        logger.info("Новый пользователь зарегистрировался" + user.get());
 
         return true;
     }
-
-
 }

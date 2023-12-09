@@ -24,9 +24,6 @@ public class FileHistoryServiceImpl implements HistoryService {
 
 
     public FileHistoryServiceImpl() {
-//        String fileName=String.format(FILENAME_FORMAT_STRING, user.getId());
-//        file=new File(fileName);
-
     }
 
     @Override

@@ -12,32 +12,30 @@ import ru.igojig.fxmessenger.prefix.Prefix;
 import java.io.IOException;
 import java.util.List;
 
-import static ru.igojig.fxmessenger.prefix.Prefix.HISTORY_SAVE;
+import static ru.igojig.fxmessenger.prefix.Prefix.CMD_HISTORY_SAVE;
 
 public class HistorySaveReceiver extends Receiver {
 
     private static final Logger logger= LogManager.getLogger(HistorySaveReceiver.class);
 
-    private static final Prefix REQUIRED_COMMAND = HISTORY_SAVE;
+    private static final Prefix REQUIRED_COMMAND = CMD_HISTORY_SAVE;
 
     public HistorySaveReceiver(ClientHandler mainHandler) {
         super(mainHandler);
     }
 
     @Override
-    public boolean receive(Exchanger ex) throws IOException {
-        if (Receiver.matchCommand(ex, REQUIRED_COMMAND)) {
-            logger.debug("Вызываем обработчик сохранения истории: ");
-            processSaveHistory(ex);
+    public boolean receive(Exchanger exchanger) throws IOException {
+        if (Receiver.matchCommand(exchanger, REQUIRED_COMMAND)) {
+            logger.debug("Вызываем обработчик сохранения истории. Пользователь: " + mainHandler.getUser());
+            processSaveHistory(exchanger);
             return true;
         }
         return false;
     }
 
-    private void processSaveHistory(Exchanger ex) {
-        List<String> history=ex.getChatExchanger(HistoryExchanger.class).getHistoryList();
+    private void processSaveHistory(Exchanger exchanger) {
+        List<String> history=exchanger.getChatExchanger(HistoryExchanger.class).getHistoryList();
         mainHandler.saveHistory(history);
     }
-
-
 }
