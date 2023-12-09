@@ -93,7 +93,6 @@ public class MyServer {
         clientHandlers.remove(clientHandler);
     }
 
-
     synchronized public void sendLoggedUsers(ClientHandler clientHandler, UserChangeMode userChangeMode) throws IOException {
         UserListExchanger userListExchanger = new UserListExchanger();
         List<User> userList = new ArrayList<>();

@@ -77,7 +77,6 @@ public class ClientHandler {
 
     public void registerReceivers(Receiver... receivers) {
         receiverList.addAll(List.of(receivers));
-//        receiverList.addAll(Arrays.asList(receiver));
     }
 
     public void notifyReceiver(Exchanger exchanger) throws IOException {
@@ -95,11 +94,6 @@ public class ClientHandler {
                 Thread.sleep(WAIT_USER_AUTHORISATION_TIMEOUT);
                 if (user == null) {
                     logger.debug("Поток-сторож определил что никто не авторизовался за " + WAIT_USER_AUTHORISATION_TIMEOUT / 1000 + "сек. Отключаем клиента");
-//                    Exchanger ex = new Exchanger(Prefix.CMD_SHUT_DOWN_CLIENT, "никто не подключился. Отключаем клиента", null);
-//                    objectOutputStream.reset();
-//                    objectOutputStream.writeObject(ex);
-//                    writeObj(ex);
-
                     sendMessage(Prefix.CMD_SHUT_DOWN_CLIENT, "никто не подключился. Отключаем клиента", null);
                     closeConnection();
                 } else {
@@ -155,7 +149,6 @@ public class ClientHandler {
 
     public void closeConnection() throws IOException {
         myServer.unsubscribe(this);
-//        myServer.sendLoggedUsers(this, UserChangeMode.REMOVE);
         closeSocket();
         logger.info("Пользователь: " + user + " вышел из системы");
         user = null;
@@ -192,14 +185,6 @@ public class ClientHandler {
     public void saveHistory(List<String> history) {
         myServer.saveHistory(history, this);
     }
-
-//    public void ssssendUpdatedUserList() throws IOException {
-//        myServer.sendUpdateUsers();
-//    }
-
-//    public void ssssendLoggedUsers() throws IOException {
-//        myServer.sendLoggedUsers(true, this);
-//    }
 
     public void sendLoggedUsers(UserChangeMode userChangeMode) throws IOException {
         myServer.sendLoggedUsers(this, userChangeMode);
