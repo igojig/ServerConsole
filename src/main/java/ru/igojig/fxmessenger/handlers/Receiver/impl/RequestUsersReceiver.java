@@ -3,6 +3,7 @@ package ru.igojig.fxmessenger.handlers.Receiver.impl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.igojig.fxmessenger.exchanger.Exchanger;
+import ru.igojig.fxmessenger.exchanger.UserChangeMode;
 import ru.igojig.fxmessenger.handlers.ClientHandler;
 import ru.igojig.fxmessenger.handlers.Receiver.Receiver;
 import ru.igojig.fxmessenger.prefix.Prefix;
@@ -25,7 +26,7 @@ public class RequestUsersReceiver extends Receiver {
     public boolean receive(Exchanger exchanger) throws IOException {
         if (Receiver.matchCommand(exchanger, REQUIRED_COMMAND)) {
             logger.debug("Вызываем обработчик запроса списка пользователей: " + exchanger);
-            mainHandler.sendLoggedUsers();
+            mainHandler.sendLoggedUsers(UserChangeMode.ADD);
             return true;
         }
         return false;

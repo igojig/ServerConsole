@@ -40,10 +40,8 @@ public class HistoryRequestReceiver extends Receiver {
         List<String> userHistoryList=mainHandler.loadHistory();
         HistoryExchanger historyExchanger=new HistoryExchanger();
         historyExchanger.setHistoryList(userHistoryList);
-//        Exchanger ex=new Exchanger(CMD_HISTORY_LOAD, "отправляем историю сообщений", historyExchanger);
         try {
             mainHandler.sendMessage(CMD_HISTORY_LOAD, "отправляем историю сообщений", historyExchanger);
-//            mainHandler.writeObj(ex);
         } catch (IOException e) {
             logger.warn("Не удалось отправить файл с историей: ", e);
         }

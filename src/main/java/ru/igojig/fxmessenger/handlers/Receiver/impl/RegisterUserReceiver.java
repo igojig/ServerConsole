@@ -36,10 +36,8 @@ public class RegisterUserReceiver extends Receiver {
 
 
     void registerUser(Exchanger exchanger) throws IOException {
-
         // должна быть логика обработки возврата метода
         doRegister(exchanger);
-
     }
 
     private boolean doRegister(Exchanger exchanger) throws IOException {
@@ -54,19 +52,14 @@ public class RegisterUserReceiver extends Receiver {
 
         if (user.isEmpty()) {
             String dbError = mainHandler.getLastDBError();
-//            Exchanger registerResponse = new Exchanger(REGISTER_ERR, dbError, null);
-//            mainHandler.writeObj(registerResponse);
             mainHandler.sendMessage(REGISTER_ERR, dbError, null);
             logger.warn("Ошибка добавления пользователя в базу данных: " + userExchanger.getUser() + ":" + dbError);
             return false;
         }
 
         mainHandler.setUser(user.get());
-
         mainHandler.subscribe();
         mainHandler.sendMessage(REGISTER_OK, "успешная регистрация", new UserExchanger(mainHandler.getUser()));
-//        Exchanger response = new Exchanger(REGISTER_OK, "успешная регистрация", new UserExchanger(mainHandler.getUser()));
-//        mainHandler.writeObj(response);
 
         logger.info("Новый пользователь зарегистрировался" + user.get());
 

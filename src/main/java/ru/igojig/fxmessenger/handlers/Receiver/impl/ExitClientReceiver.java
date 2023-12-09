@@ -3,6 +3,7 @@ package ru.igojig.fxmessenger.handlers.Receiver.impl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.igojig.fxmessenger.exchanger.Exchanger;
+import ru.igojig.fxmessenger.exchanger.UserChangeMode;
 import ru.igojig.fxmessenger.handlers.ClientHandler;
 import ru.igojig.fxmessenger.handlers.Receiver.Receiver;
 import ru.igojig.fxmessenger.prefix.Prefix;
@@ -24,6 +25,8 @@ public class ExitClientReceiver extends Receiver {
     public boolean receive(Exchanger exchanger) throws IOException {
         if(Receiver.matchCommand(exchanger, REQUIRED_COMMAND)){
             logger.debug("Вызываем обработчик ExitClient: " + exchanger);
+            mainHandler.unsubscribe();
+            mainHandler.sendLoggedUsers(UserChangeMode.REMOVE);
             mainHandler.closeConnection();
             return true;
         }

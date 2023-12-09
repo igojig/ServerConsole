@@ -3,6 +3,7 @@ package ru.igojig.fxmessenger.exchanger.impl;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.igojig.fxmessenger.exchanger.ChatExchanger;
+import ru.igojig.fxmessenger.exchanger.UserChangeMode;
 import ru.igojig.fxmessenger.model.User;
 
 import java.io.Serial;
@@ -17,17 +18,7 @@ public class UserListExchanger implements ChatExchanger, Serializable {
 
     private List<User> userList;
     private User changedUser;
-    private Mode mode;
-
-
-    public enum Mode{
-        ADD,
-        REMOVE,
-        CHANGE_NAME
-    }
-
-
-
+    private UserChangeMode userChangeMode;
 
 
 }

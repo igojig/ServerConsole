@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import ru.igojig.fxmessenger.exchanger.UserChangeMode;
 import ru.igojig.fxmessenger.exchanger.impl.UserExchanger;
 import ru.igojig.fxmessenger.exchanger.impl.UserListExchanger;
 import ru.igojig.fxmessenger.handlers.ClientHandler;
@@ -86,59 +87,26 @@ public class MyServer {
 
     synchronized public void subscribe(ClientHandler clientHandler) throws IOException {
         clientHandlers.add(clientHandler);
-//        sendLoggedUsers(true, clientHandler);
     }
 
     synchronized public void unsubscribe(ClientHandler clientHandler) throws IOException {
         clientHandlers.remove(clientHandler);
-        sendLoggedUsers(false, clientHandler);
     }
 
-    /**
-     * @param mode          - true - пользователь добавился, false - удалился
-     * @param clientHandler -
-     * @throws IOException
-     */
-    synchronized public void sendLoggedUsers(boolean mode, ClientHandler clientHandler) throws IOException {
 
+    synchronized public void sendLoggedUsers(ClientHandler clientHandler, UserChangeMode userChangeMode) throws IOException {
         UserListExchanger userListExchanger = new UserListExchanger();
         List<User> userList = new ArrayList<>();
 
-        if (mode) {
-            userListExchanger.setMode(UserListExchanger.Mode.ADD);
-        } else {
-            userListExchanger.setMode(UserListExchanger.Mode.REMOVE);
-        }
-
+        userListExchanger.setUserChangeMode(userChangeMode);
         userListExchanger.setChangedUser(clientHandler.getUser());
 
-        for (ClientHandler handler : clientHandlers) {
-            userList.add(handler.getUser());
-        }
+        clientHandlers.forEach(u -> userList.add(u.getUser()));
 
         userListExchanger.setUserList(userList);
 
         for (ClientHandler handler : clientHandlers) {
             handler.sendMessage(LOGGED_USERS, "обновление списка пользователей", userListExchanger);
-        }
-    }
-
-    // посылаем когда пользователь изменил имя
-    synchronized public void sendUpdateUsers() throws IOException {
-
-        UserListExchanger userListExchanger = new UserListExchanger();
-        List<User> userList = new ArrayList<>();
-
-
-        for (ClientHandler clientHandler : clientHandlers) {
-            userList.add(clientHandler.getUser());
-        }
-
-        userListExchanger.setUserList(userList);
-        userListExchanger.setMode(UserListExchanger.Mode.CHANGE_NAME);
-
-        for (ClientHandler clientHandler : clientHandlers) {
-            clientHandler.sendMessage(CHANGE_USERNAME_NEW_LIST, "пользователь сменил имя", userListExchanger);
         }
     }
 
@@ -153,7 +121,7 @@ public class MyServer {
                 clientHandler.sendMessage(PRIVATE_MSG, message, new UserExchanger(sender.getUser()));
 
                 //дублируем сообщение себе
-                sender.sendMessage(CLIENT_MSG, message + "-->[" + sendToUser.getUsername()+ "]", new UserExchanger(sender.getUser()));
+                sender.sendMessage(CLIENT_MSG, message + "-->[" + sendToUser.getUsername() + "]", new UserExchanger(sender.getUser()));
                 return true;
             }
         }

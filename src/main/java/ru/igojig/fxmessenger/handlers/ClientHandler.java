@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.igojig.fxmessenger.exchanger.ChatExchanger;
 import ru.igojig.fxmessenger.exchanger.Exchanger;
+import ru.igojig.fxmessenger.exchanger.UserChangeMode;
 import ru.igojig.fxmessenger.handlers.Receiver.*;
 import ru.igojig.fxmessenger.handlers.Receiver.impl.*;
 import ru.igojig.fxmessenger.model.User;
@@ -51,7 +52,7 @@ public class ClientHandler {
         objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
         objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
 
-        //запускаем поток-сторож для ожидания подключения в течение 120 сек. (WAIT_USER_AUTHORISATION_TIMEOUT)
+        //запускаем поток-сторож для ожидания подключения в течение WAIT_USER_AUTHORISATION_TIMEOUT
         startWaitTimeOutThread();
 
         Receiver[] receivers = {
@@ -94,10 +95,12 @@ public class ClientHandler {
                 Thread.sleep(WAIT_USER_AUTHORISATION_TIMEOUT);
                 if (user == null) {
                     logger.debug("Поток-сторож определил что никто не авторизовался за " + WAIT_USER_AUTHORISATION_TIMEOUT / 1000 + "сек. Отключаем клиента");
-                    Exchanger ex = new Exchanger(Prefix.CMD_SHUT_DOWN_CLIENT, "никто не подключился. Отключаем клиента", null);
+//                    Exchanger ex = new Exchanger(Prefix.CMD_SHUT_DOWN_CLIENT, "никто не подключился. Отключаем клиента", null);
 //                    objectOutputStream.reset();
 //                    objectOutputStream.writeObject(ex);
-                    writeObj(ex);
+//                    writeObj(ex);
+
+                    sendMessage(Prefix.CMD_SHUT_DOWN_CLIENT, "никто не подключился. Отключаем клиента", null);
                     closeConnection();
                 } else {
                     logger.debug("Поток-сторож определил что подключен пользователь: " + user + ". Продолжаем работу");
@@ -152,13 +155,10 @@ public class ClientHandler {
 
     public void closeConnection() throws IOException {
         myServer.unsubscribe(this);
+//        myServer.sendLoggedUsers(this, UserChangeMode.REMOVE);
         closeSocket();
         logger.info("Пользователь: " + user + " вышел из системы");
         user = null;
-    }
-
-    public void subscribe() throws IOException {
-        myServer.subscribe(this);
     }
 
     public boolean isAlreadyLogin(User user) {
@@ -193,11 +193,24 @@ public class ClientHandler {
         myServer.saveHistory(history, this);
     }
 
-    public void sendUpdatedUserList() throws IOException {
-        myServer.sendUpdateUsers();
+//    public void ssssendUpdatedUserList() throws IOException {
+//        myServer.sendUpdateUsers();
+//    }
+
+//    public void ssssendLoggedUsers() throws IOException {
+//        myServer.sendLoggedUsers(true, this);
+//    }
+
+    public void sendLoggedUsers(UserChangeMode userChangeMode) throws IOException {
+        myServer.sendLoggedUsers(this, userChangeMode);
     }
 
-    public void sendLoggedUsers() throws IOException {
-        myServer.sendLoggedUsers(true, this);
+
+    public void subscribe() throws IOException {
+        myServer.subscribe(this);
+    }
+
+    public void unsubscribe() throws IOException {
+        myServer.unsubscribe(this);
     }
 }

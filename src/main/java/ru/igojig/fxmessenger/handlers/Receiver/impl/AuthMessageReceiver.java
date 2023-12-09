@@ -48,8 +48,6 @@ public class AuthMessageReceiver extends Receiver {
         if (mainHandler.isAlreadyLogin(userExchanger.getUser())) {
             logger.debug("Пользователь: " + userExchanger.getUser() + " уже зарегистрирован в системе");
             mainHandler.sendMessage(AUTH_ERR, "пользователь уже зарегистрирован в системе", new UserExchanger(userExchanger.getUser()));
-//            Exchanger response = new Exchanger(AUTH_ERR, "пользователь уже зарегистрирован в системе", new UserExchanger(userExchanger.getUser()));
-//            mainHandler.writeObj(response);
             return false;
         }
 
@@ -58,8 +56,6 @@ public class AuthMessageReceiver extends Receiver {
             String dbError = mainHandler.getLastDBError();
             logger.debug(dbError +":" +userExchanger.getUser());
             mainHandler.sendMessage(AUTH_ERR, dbError, new UserExchanger(userExchanger.getUser()));
-//            Exchanger response = new Exchanger(AUTH_ERR, dbError, new UserExchanger(userExchanger.getUser()));
-//            mainHandler.writeObj(response);
             return false;
         }
 
@@ -67,8 +63,6 @@ public class AuthMessageReceiver extends Receiver {
 
         mainHandler.subscribe();
         mainHandler.sendMessage(AUTH_OK, "успешная авторизация", new UserExchanger(mainHandler.getUser()));
-//        Exchanger response = new Exchanger(AUTH_OK, "успешная авторизация", new UserExchanger(mainHandler.getUser()));
-//        mainHandler.writeObj(response);
         logger.info("Пользователь подключился: " + user.get());
 
         return true;
