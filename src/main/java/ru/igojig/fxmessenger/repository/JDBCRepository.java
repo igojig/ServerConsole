@@ -9,13 +9,10 @@ import java.util.Optional;
 
 
 public class JDBCRepository {
-//    Connection connection;
 
     private static final Logger logger = LogManager.getLogger(JDBCRepository.class);
 
     private static Throwable lastError;
-
-    String getUsernameByLoginAndPasswordSQL = "SELECT username FROM users WHERE login=? AND password=?";
 
     String addUserSQL = "INSERT INTO users (login, password, username) VALUES (?,?,?)";
 
@@ -135,7 +132,7 @@ public class JDBCRepository {
         ) {
             preparedStatement.setString(1, login);
             preparedStatement.setString(2, password);
-            try (ResultSet rs = preparedStatement.executeQuery();) {
+            try (ResultSet rs = preparedStatement.executeQuery()) {
                 if (rs.next()) {
                     User newUser = new User((long) rs.getInt("id"),
                             rs.getString("username"),
