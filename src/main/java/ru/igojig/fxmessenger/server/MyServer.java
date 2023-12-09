@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import ru.igojig.fxmessenger.ServerApp;
 import ru.igojig.fxmessenger.exchanger.UserChangeMode;
 import ru.igojig.fxmessenger.exchanger.impl.UserExchanger;
 import ru.igojig.fxmessenger.exchanger.impl.UserListExchanger;
@@ -171,5 +172,13 @@ public class MyServer {
 
     synchronized public void saveHistory(List<String> history, ClientHandler clientHandler) {
         historyService.saveHistory(clientHandler.getUser(), history);
+    }
+
+    public void clearHistory(){
+        historyService.clearHistory();
+    }
+
+    public void clearDB() {
+        repository.initDatabase();
     }
 }

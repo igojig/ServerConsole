@@ -154,4 +154,18 @@ public class JDBCRepository {
     public String getLastDBError() {
         return lastError.getMessage();
     }
+
+
+    public void initDatabase() {
+        try (Connection connection = getConnection();
+             Statement statement = connection.createStatement();
+        ) {
+            statement.execute("Delete from users");
+            statement.execute("insert into users(login, password, username) values(1,1,'One'),(2,2,'Two'), (3,3,'Three'), (4,4, 'Four')");
+            logger.debug("БД инициализирована");
+        } catch (SQLException e) {
+            logger.debug("Не удалось инициализировать БД", e);
+            lastError = e;
+        }
+    }
 }

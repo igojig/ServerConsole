@@ -14,12 +14,6 @@ public class JDBCAuthServiceImpl implements AuthService{
         this.repository = repository;
     }
 
-
-//    @Override
-//    synchronized public Optional<String> getUsernameByLoginAndPassword(String login, String password) {
-//        return  repository.getUsernameByLoginAndPassword(login, password);
-//    }
-
     @Override
     synchronized public Optional<User> addUser(String userName, String login, String password) {
         return repository.addUser(userName, login, password);
@@ -29,11 +23,6 @@ public class JDBCAuthServiceImpl implements AuthService{
     public Optional<String> renameUser(String oldUserName, String newUserName) {
         return repository.renameUser(oldUserName, newUserName);
     }
-//
-//    @Override
-//    public int getUserIdByLoginAndPassword(String login, String password) {
-//        return repository.getUserIdByLoginAndPassword(login, password);
-//    }
 
     @Override
     public Optional<User> findUserByLoginAndPassword(String login, String password) {
