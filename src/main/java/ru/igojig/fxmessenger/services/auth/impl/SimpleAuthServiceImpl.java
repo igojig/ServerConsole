@@ -50,6 +50,11 @@ public class SimpleAuthServiceImpl implements AuthService {
         return Optional.empty();
     }
 
+    @Override
+    public int getUserIdByLoginAndPassword(String login, String password) {
+        return -1;
+    }
+
 //    @Override
 //    public int getUserIdByLoginAndPassword(String login, String password) {
 //        return -1;
@@ -63,5 +68,10 @@ public class SimpleAuthServiceImpl implements AuthService {
     @Override
     public String getLastDBError() {
         return null;
+    }
+
+    @Override
+    public void initDB() {
+
     }
 }

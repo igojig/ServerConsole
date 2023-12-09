@@ -4,14 +4,12 @@ import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import ru.igojig.fxmessenger.ServerApp;
 import ru.igojig.fxmessenger.exchanger.UserChangeMode;
 import ru.igojig.fxmessenger.exchanger.impl.UserExchanger;
 import ru.igojig.fxmessenger.exchanger.impl.UserListExchanger;
 import ru.igojig.fxmessenger.handlers.ClientHandler;
 import ru.igojig.fxmessenger.model.User;
 import ru.igojig.fxmessenger.prefix.Prefix;
-import ru.igojig.fxmessenger.repository.JDBCRepository;
 import ru.igojig.fxmessenger.services.auth.AuthService;
 import ru.igojig.fxmessenger.services.auth.impl.JDBCAuthServiceImpl;
 import ru.igojig.fxmessenger.services.storage.HistoryService;
@@ -20,7 +18,6 @@ import ru.igojig.fxmessenger.services.storage.impl.FileHistoryServiceImpl;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,20 +34,17 @@ public class MyServer {
     private final AuthService authService;
     private final List<ClientHandler> clientHandlers;
 
-    private final JDBCRepository repository;
-
     private final HistoryService historyService;
 
     public MyServer(int port) throws IOException {
         clientHandlers = new ArrayList<>();
 
         try {
-            repository = new JDBCRepository();
-        } catch (SQLException | ClassNotFoundException e) {
+            authService=new JDBCAuthServiceImpl();
+        } catch ( ClassNotFoundException e) {
             logger.fatal("Драйвер JDBC не загружен", e);
             throw new RuntimeException(e);
         }
-        authService = new JDBCAuthServiceImpl(repository);
         historyService = new FileHistoryServiceImpl();
 
         serverSocket = new ServerSocket(port);
@@ -178,7 +172,7 @@ public class MyServer {
         historyService.clearHistory();
     }
 
-    public void clearDB() {
-        repository.initDatabase();
+    public void initDB() {
+        authService.initDB();
     }
 }

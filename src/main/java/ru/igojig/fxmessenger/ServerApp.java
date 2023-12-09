@@ -31,7 +31,7 @@ public class ServerApp {
             }
 
             if(CLEAR_DB){
-                myServer.clearDB();
+                myServer.initDB();
             }
 
             myServer.start();
