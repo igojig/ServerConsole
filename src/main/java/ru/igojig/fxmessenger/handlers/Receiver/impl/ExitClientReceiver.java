@@ -25,6 +25,7 @@ public class ExitClientReceiver extends Receiver {
     public boolean receive(Exchanger exchanger) throws IOException {
         if(Receiver.matchCommand(exchanger, REQUIRED_COMMAND)){
             logger.debug("Вызываем обработчик ExitClient: " + exchanger);
+            mainHandler.stopWaitTimeOutThread();
             mainHandler.unsubscribe();
             mainHandler.sendLoggedUsers(UserChangeMode.REMOVE);
             mainHandler.closeConnection();

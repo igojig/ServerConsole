@@ -12,7 +12,6 @@ public enum Prefix {
 
     PRIVATE_MSG_ERR,
 
-    //список залогиненных пользователей
     LOGGED_USERS,
 
     STOP_SERVER,
@@ -26,8 +25,6 @@ public enum Prefix {
     CHANGE_USERNAME_REQUEST,
     CHANGE_USERNAME_OK,
     CHANGE_USERNAME_ERR,
-
-//    CHANGE_USERNAME_NEW_LIST,
 
     CMD_HISTORY_REQUEST,
     CMD_HISTORY_SAVE,

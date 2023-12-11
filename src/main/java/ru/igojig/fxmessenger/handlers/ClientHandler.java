@@ -24,7 +24,7 @@ public class ClientHandler {
     private static final Logger logger = LogManager.getLogger(ClientHandler.class);
 
     // сколько ждем до авторизации клиента, потом отключаем Socket
-    public static final int WAIT_USER_AUTHORISATION_TIMEOUT = 10 * 1000;
+    public static final int WAIT_USER_AUTHORISATION_TIMEOUT = 60 * 1000;
 
     private final MyServer myServer;
     private final Socket clientSocket;
@@ -87,6 +87,8 @@ public class ClientHandler {
         }
     }
 
+    // поток-сторож - ждем WAIT_USER_AUTHORISATION_TIMEOUT(сек),
+    // если клиент не вошел в чат, посылаем команду отключения клиента
     private void startWaitTimeOutThread() {
         waitTimeOutThread = new Thread(() -> {
             try {
@@ -197,5 +199,9 @@ public class ClientHandler {
 
     public void unsubscribe() throws IOException {
         myServer.unsubscribe(this);
+    }
+
+    public void stopWaitTimeOutThread(){
+        waitTimeOutThread.interrupt();
     }
 }

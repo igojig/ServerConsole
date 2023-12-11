@@ -27,8 +27,7 @@ public class JDBCAuthServiceImpl implements AuthService {
     }
 
     public Connection getConnection() {
-        String connectionStr = "jdbc:sqlite:./db/users.db";
-
+        final String connectionStr = "jdbc:sqlite:./db/users.db";
         try {
             return DriverManager.getConnection(connectionStr);
         } catch (SQLException e) {
@@ -55,14 +54,13 @@ public class JDBCAuthServiceImpl implements AuthService {
                     return Optional.of(user);
                 }
             }
+            lastError = new Exception("Неизвестная ошибка");
             return Optional.empty();
         } catch (SQLException e) {
             logger.error("Ошибка добавления пользователя", e);
             lastError = e;
             return Optional.empty();
         }
-//        lastError = new Exception("Нет данных");
-//        return Optional.empty();
     }
 
     @Override
@@ -149,7 +147,7 @@ public class JDBCAuthServiceImpl implements AuthService {
                 return Optional.empty();
             }
         } catch (SQLException e) {
-            logger.warn("Не удалось найти пользователя", e);
+            logger.warn("Ошибка поиска пользователя", e);
             lastError = e;
             return Optional.empty();
         }
@@ -166,7 +164,11 @@ public class JDBCAuthServiceImpl implements AuthService {
              Statement statement = connection.createStatement();
         ) {
             statement.execute("Delete from users");
-            statement.execute("insert into users(login, password, username) values(1,1,'One'),(2,2,'Two'), (3,3,'Three'), (4,4, 'Four')");
+            statement.execute("insert into users(login, password, username) values" +
+                    "(1, 1, 'One')," +
+                    "(2, 2, 'Two'), " +
+                    "(3, 3, 'Three'), " +
+                    "(4, 4, 'Four')");
             logger.debug("БД инициализирована");
         } catch (SQLException e) {
             logger.debug("Не удалось инициализировать БД", e);
