@@ -23,7 +23,7 @@ public class ClientHandler {
 
     private static final Logger logger = LogManager.getLogger(ClientHandler.class);
 
-    // сколько ждем до авторизации клиента, потом отключаем Socket
+    // сколько ждем до аутентификации клиента, потом посылаем команду закрыть клиент и отключаем Socket
     public static final int WAIT_USER_AUTHORISATION_TIMEOUT = 60 * 1000;
 
     private final MyServer myServer;
@@ -96,7 +96,9 @@ public class ClientHandler {
                 Thread.sleep(WAIT_USER_AUTHORISATION_TIMEOUT);
                 if (user == null) {
                     logger.debug("Поток-сторож определил что никто не авторизовался за " + WAIT_USER_AUTHORISATION_TIMEOUT / 1000 + "сек. Отключаем клиента");
-                    sendMessage(Prefix.CMD_SHUT_DOWN_CLIENT, "никто не подключился. Отключаем клиента", null);
+                    sendMessage(Prefix.CMD_SHUT_DOWN_CLIENT,
+                            String.format("Вы не вошли в чат в течении %s секунд.%nНажмите ОК для выхода.", WAIT_USER_AUTHORISATION_TIMEOUT / 1000),
+                            null);
                     closeConnection();
                 } else {
                     logger.debug("Поток-сторож определил что подключен пользователь: " + user + ". Продолжаем работу");

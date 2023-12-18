@@ -26,26 +26,11 @@ public class SimpleAuthServiceImpl implements AuthService {
     public SimpleAuthServiceImpl()  {
 
     }
-//
-//    @Override
-//    synchronized public Optional<String> getUsernameByLoginAndPassword(String login, String password) {
-//        return clients.stream().
-//                filter(o -> o.getLogin().equalsIgnoreCase(login) && o.getPassword().equalsIgnoreCase(password))
-//                .findAny()
-//                .map(User::getUsername);
-//    }
 
     @Override
     synchronized public Optional<User> addUser(String userName, String login, String password) {
         return Optional.empty();
     }
-
-//    @Override
-//    synchronized public boolean isUserPresentInDatabase(String username) {
-//       return clients.stream()
-//                .map(User::getUsername)
-//                .anyMatch(o->o.equalsIgnoreCase(username));
-//    }
 
     @Override
     public Optional<String> renameUser(String oldUserName, String newUsername) {
@@ -56,11 +41,6 @@ public class SimpleAuthServiceImpl implements AuthService {
     public int getUserIdByLoginAndPassword(String login, String password) {
         return -1;
     }
-
-//    @Override
-//    public int getUserIdByLoginAndPassword(String login, String password) {
-//        return -1;
-//    }
 
     @Override
     public Optional<User> findUserByLoginAndPassword(String login, String password) {
@@ -73,7 +53,7 @@ public class SimpleAuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void initDB() {
+    public void initDB(boolean doInit) {
 
     }
 }

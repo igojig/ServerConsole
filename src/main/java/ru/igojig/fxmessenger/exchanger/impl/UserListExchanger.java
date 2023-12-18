@@ -19,6 +19,4 @@ public class UserListExchanger implements ChatExchanger, Serializable {
     private List<User> userList;
     private User changedUser;
     private UserChangeMode userChangeMode;
-
-
 }

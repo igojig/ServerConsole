@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.igojig.fxmessenger.model.User;
 import ru.igojig.fxmessenger.services.auth.AuthService;
+import ru.igojig.fxmessenger.services.LocalFileService;
 
 import java.sql.*;
 import java.util.Optional;
@@ -27,7 +28,7 @@ public class JDBCAuthServiceImpl implements AuthService {
     }
 
     public Connection getConnection() {
-        final String connectionStr = "jdbc:sqlite:./db/users.db";
+        final String connectionStr = "jdbc:sqlite:" + LocalFileService.storagePath.toString() + "/users.db";
         try {
             return DriverManager.getConnection(connectionStr);
         } catch (SQLException e) {
@@ -159,20 +160,24 @@ public class JDBCAuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void initDB() {
-        try (Connection connection = getConnection();
-             Statement statement = connection.createStatement();
-        ) {
-            statement.execute("Delete from users");
-            statement.execute("insert into users(login, password, username) values" +
-                    "(1, 1, 'One')," +
-                    "(2, 2, 'Two'), " +
-                    "(3, 3, 'Three'), " +
-                    "(4, 4, 'Four')");
-            logger.debug("БД инициализирована");
-        } catch (SQLException e) {
-            logger.debug("Не удалось инициализировать БД", e);
-            lastError = e;
+    public void initDB(boolean doInit) {
+        if(doInit){
+            try (Connection connection = getConnection();
+                 Statement statement = connection.createStatement();
+            ) {
+                statement.execute("Delete from users");
+                // reset autoincrement counter
+                statement.execute("delete from sqlite_sequence where name='users'");
+                statement.execute("insert into users(login, password, username) values" +
+                        "(1, 1, 'One')," +
+                        "(2, 2, 'Two'), " +
+                        "(3, 3, 'Three'), " +
+                        "(4, 4, 'Four')");
+                logger.debug("БД инициализирована");
+            } catch (SQLException e) {
+                logger.debug("Не удалось инициализировать БД", e);
+                lastError = e;
+            }
         }
     }
 }

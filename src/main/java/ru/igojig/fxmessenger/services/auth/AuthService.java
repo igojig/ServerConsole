@@ -15,5 +15,5 @@ public interface AuthService {
 
     String getLastDBError();
 
-    void initDB();
+    void initDB(boolean doInit);
 }

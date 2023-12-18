@@ -168,11 +168,19 @@ public class MyServer {
         historyService.saveHistory(clientHandler.getUser(), history);
     }
 
-    public void clearHistory(){
-        historyService.clearHistory();
+//    public void clearHistory(){
+//        historyService.clearHistory();
+//    }
+
+    public void initDB(boolean doInit) {
+        authService.initDB(doInit);
     }
 
-    public void initDB() {
-        authService.initDB();
+//    public void initHistory(boolean clearHistory) {
+//        historyService.initHistory(clearHistory);
+//    }
+
+    public void initStorage(){
+
     }
 }

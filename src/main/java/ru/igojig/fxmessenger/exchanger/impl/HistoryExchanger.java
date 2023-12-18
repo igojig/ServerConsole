@@ -17,6 +17,4 @@ public class HistoryExchanger implements ChatExchanger, Serializable {
     private static final long serialVersionUID = 5601676629572006971L;
 
     private List<String> historyList;
-
-
 }

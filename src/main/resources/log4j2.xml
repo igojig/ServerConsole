@@ -5,7 +5,8 @@
             <PatternLayout pattern="%d{HH:mm:ss} %5p %t %c:%M:%L - %m%n"/>
         </Console>
 
-        <File name="MyFile" fileName="./logs/chat.log">
+<!--        <File name="MyFile" fileName="./logs/chat.log">-->
+        <File name="MyFile" fileName="${sys:user.home}/chat_/chat.log">
             <append>false</append>
             <PatternLayout>
                 <Pattern>%d{HH:mm:ss} %5p %t %c:%M:%L - %m%n</Pattern>

@@ -7,6 +7,7 @@ import ru.igojig.fxmessenger.exchanger.UserChangeMode;
 import ru.igojig.fxmessenger.exchanger.impl.UserExchanger;
 import ru.igojig.fxmessenger.handlers.ClientHandler;
 import ru.igojig.fxmessenger.handlers.Receiver.Receiver;
+import ru.igojig.fxmessenger.model.User;
 import ru.igojig.fxmessenger.prefix.Prefix;
 
 import java.io.IOException;
@@ -52,7 +53,8 @@ public class ChangeUsernameReceiver extends Receiver {
         }
 
         String dbError = mainHandler.getLastDBError();
-        mainHandler.sendMessage(CHANGE_USERNAME_ERR, dbError, null);
+        mainHandler.sendMessage(CHANGE_USERNAME_ERR, dbError,
+                new UserExchanger(new User(null, userExchanger.getUser().getUsername(), null, null)));
         logger.debug("Не удалось сменить имя: " + exchanger + dbError);
         return false;
     }

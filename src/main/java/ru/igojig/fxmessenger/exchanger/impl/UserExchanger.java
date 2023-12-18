@@ -15,5 +15,4 @@ public class UserExchanger implements ChatExchanger, Serializable {
     private static final long serialVersionUID= -4945206969976763143L;
 
     private User user;
-
 }
