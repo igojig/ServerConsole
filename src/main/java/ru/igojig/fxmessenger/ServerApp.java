@@ -12,10 +12,10 @@ public class ServerApp {
     /**
      * удаление списка пользователей и создание дефолтных при перезапуске:
      * [password]  [login]  [username]
-     * 1          1        One
-     * 2          2        Two
-     * 3          3        Three
-     * 4          4        Four
+     *    1          1        One
+     *    2          2        Two
+     *    3          3        Three
+     *    4          4        Four
      */
     private static final boolean INIT_DB = true;
 
@@ -43,6 +43,4 @@ public class ServerApp {
             throw new RuntimeException(e);
         }
     }
-
-
 }

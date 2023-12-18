@@ -41,7 +41,7 @@ public class MyServer {
 
         try {
             authService=new JDBCAuthServiceImpl();
-        } catch ( ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             logger.fatal("Драйвер JDBC не загружен", e);
             throw new RuntimeException(e);
         }
@@ -168,19 +168,8 @@ public class MyServer {
         historyService.saveHistory(clientHandler.getUser(), history);
     }
 
-//    public void clearHistory(){
-//        historyService.clearHistory();
-//    }
-
     public void initDB(boolean doInit) {
         authService.initDB(doInit);
     }
 
-//    public void initHistory(boolean clearHistory) {
-//        historyService.initHistory(clearHistory);
-//    }
-
-    public void initStorage(){
-
-    }
 }

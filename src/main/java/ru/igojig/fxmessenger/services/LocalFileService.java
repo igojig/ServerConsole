@@ -29,7 +29,7 @@ public class LocalFileService {
 
         userHomePath = Path.of(userDir);
         storagePath = Path.of(userDir, STORAGE_DIR);
-        historyPath = Paths.get(userDir, STORAGE_DIR, HISTORY_DIR);
+        historyPath = Path.of(userDir, STORAGE_DIR, HISTORY_DIR);
 
         if (!Files.exists(historyPath)) {
             try {
@@ -44,24 +44,27 @@ public class LocalFileService {
     }
 
     public static void clearHistory(boolean doClear) {
-        if (doClear) {
-            try (Stream<Path> list = Files.list(historyPath)) {
-                list.forEach(f -> {
-                    try {
-                        Files.delete(f);
-                    } catch (IOException e) {
-                        logger.debug("Не удалось удалить файл: " + f, e);
-                    }
-                });
-                logger.debug("Файловая история очищена");
-            } catch (IOException e) {
-                logger.debug("Ошибка очистки истории", e);
-            }
+        if (!doClear) {
+            return;
         }
+
+        try (Stream<Path> list = Files.list(historyPath)) {
+            list.forEach(f -> {
+                try {
+                    Files.delete(f);
+                } catch (IOException e) {
+                    logger.debug("Не удалось удалить файл: " + f, e);
+                }
+            });
+            logger.debug("Файловая история очищена");
+        } catch (IOException e) {
+            logger.debug("Ошибка очистки истории", e);
+        }
+
     }
 
     public static void copyDB() {
-        Path resolve=storagePath.resolve("users.db");
+        Path resolve = storagePath.resolve("users.db");
         try (InputStream resourceAsStream = LocalFileService.class.getResourceAsStream("/users.db")) {
             assert resourceAsStream != null;
             Files.copy(resourceAsStream, resolve);
@@ -69,7 +72,7 @@ public class LocalFileService {
         } catch (FileAlreadyExistsException e) {
             logger.warn(String.format("Файл [%s] существует", resolve));
         } catch (IOException e) {
-            logger.error(String.format("Не удалось скопировать БД рабочий каталог: [%s]", resolve), e);
+            logger.error(String.format("Не удалось скопировать БД в рабочий каталог: [%s]", resolve), e);
             System.exit(0);
         }
     }

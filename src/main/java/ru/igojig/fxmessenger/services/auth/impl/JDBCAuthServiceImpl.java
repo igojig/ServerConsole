@@ -15,12 +15,11 @@ public class JDBCAuthServiceImpl implements AuthService {
 
     private static Throwable lastError;
 
-    String addUserSQL = "INSERT INTO users (login, password, username) VALUES (?,?,?)";
-
-    String chgUserNameSQL = "UPDATE users SET username=? where username=?";
-    String findUserByUsernameSQL = "Select * FROM users where username=?";
-    String getUserIdByLoginAndPasswordSQL = "SELECT id FROM users WHERE login=? AND password=?";
-    String findUserByLoginAndPasswordSQL = "SELECT * from users WHERE login=? AND password=?";
+    private final String addUserSQL = "INSERT INTO users (login, password, username) VALUES (?,?,?)";
+    private final String changeUserNameSQL = "UPDATE users SET username=? where username=?";
+    private final String findUserByUsernameSQL = "Select * FROM users where username=?";
+    private final String getUserIdByLoginAndPasswordSQL = "SELECT id FROM users WHERE login=? AND password=?";
+    private final String findUserByLoginAndPasswordSQL = "SELECT * from users WHERE login=? AND password=?";
 
     public JDBCAuthServiceImpl() throws ClassNotFoundException {
         Class.forName("org.sqlite.JDBC");
@@ -55,7 +54,7 @@ public class JDBCAuthServiceImpl implements AuthService {
                     return Optional.of(user);
                 }
             }
-            lastError = new Exception("Неизвестная ошибка");
+            lastError = new Exception("Неизвестная ошибка при добавлении пользователя");
             return Optional.empty();
         } catch (SQLException e) {
             logger.error("Ошибка добавления пользователя", e);
@@ -67,7 +66,7 @@ public class JDBCAuthServiceImpl implements AuthService {
     @Override
     synchronized public Optional<String> renameUser(String oldUserName, String newUserName) {
         try (Connection connection = getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(chgUserNameSQL);
+             PreparedStatement preparedStatement = connection.prepareStatement(changeUserNameSQL);
         ) {
             preparedStatement.setString(2, oldUserName);
             preparedStatement.setString(1, newUserName);
@@ -84,7 +83,6 @@ public class JDBCAuthServiceImpl implements AuthService {
             return Optional.empty();
         }
 
-
         try (Connection connection = getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(findUserByUsernameSQL);
         ) {
@@ -95,13 +93,12 @@ public class JDBCAuthServiceImpl implements AuthService {
                     return Optional.of(nu);
                 }
             }
-
         } catch (SQLException e) {
             lastError = e;
             logger.warn("Не удалось переименовать пользователя", e);
             return Optional.empty();
         }
-        lastError = new Exception("Нет данных");
+        lastError = new Exception("Неизвестная ошибка при переименовании пользователя");
         return Optional.empty();
     }
 
@@ -121,7 +118,7 @@ public class JDBCAuthServiceImpl implements AuthService {
             }
         } catch (SQLException e) {
             lastError = e;
-            logger.warn("Не удалось найти UserId", e);
+            logger.warn("Не удалось найти userId", e);
         }
         return id;
     }
@@ -161,23 +158,25 @@ public class JDBCAuthServiceImpl implements AuthService {
 
     @Override
     public void initDB(boolean doInit) {
-        if(doInit){
-            try (Connection connection = getConnection();
-                 Statement statement = connection.createStatement();
-            ) {
-                statement.execute("Delete from users");
-                // reset autoincrement counter
-                statement.execute("delete from sqlite_sequence where name='users'");
-                statement.execute("insert into users(login, password, username) values" +
-                        "(1, 1, 'One')," +
-                        "(2, 2, 'Two'), " +
-                        "(3, 3, 'Three'), " +
-                        "(4, 4, 'Four')");
-                logger.debug("БД инициализирована");
-            } catch (SQLException e) {
-                logger.debug("Не удалось инициализировать БД", e);
-                lastError = e;
-            }
+        if (!doInit) {
+            return;
+        }
+
+        try (Connection connection = getConnection();
+             Statement statement = connection.createStatement();
+        ) {
+            statement.execute("Delete from users");
+            // reset autoincrement counter
+            statement.execute("delete from sqlite_sequence where name='users'");
+            statement.execute("insert into users(login, password, username) values" +
+                    "(1, 1, 'One')," +
+                    "(2, 2, 'Two'), " +
+                    "(3, 3, 'Three'), " +
+                    "(4, 4, 'Four')");
+            logger.debug("БД инициализирована");
+        } catch (SQLException e) {
+            logger.debug("Не удалось инициализировать БД", e);
+            lastError = e;
         }
     }
 }
