@@ -8,10 +8,9 @@
 # Сетевой чат (серверная часть)
 Учебный проект GeekBrains
 
-#### [Клиентская часть](https://github.com/igojig/FxMessager_client)
-
 ## Функционал
 - аутентификация и регистрация клиентов
+- проверка от повторного входа
 - диспетчеризация сообщений от клиентов, в т.ч. приватных
 - сохранение истории сообщений при выходе клиента
 - загрузка истории сообщение при входе клиента
@@ -36,6 +35,8 @@ java -jar Server-jar-with-dependencies.jar
 ```
 или запуск из IDE
 
+### Связанный проект - [Клиентская часть](https://github.com/igojig/FxMessager_client)
+
 ## Настройки
 
 
@@ -55,10 +56,10 @@ ___
 - [user.home]/chat_
 - [user.home]/chat_/history
 
-  | каталог                   | назначение                           |
-  |---------------------------|--------------------------------------|
-  | [user.home]/chat_         | лог<br/>база данных(users.db)        |
-  | [user.home]/chat_/history | история клиентов в текстовом формате |
+  | каталог                   | назначение                            |
+  |---------------------------|---------------------------------------|
+  | [user.home]/chat_         | лог;<br/>база данных(users.db);       |
+  | [user.home]/chat_/history | история клиентов в текстовом формате; |
 ```java
 public class LocalFileService {
     public static final String USER_HOME_DIR_ENVIRONMENT_VARIABLE = "user.home";
