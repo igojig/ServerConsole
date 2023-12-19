@@ -80,4 +80,4 @@ public class ServerApp {
 ### Диаграмма взаимодействия
 
 [//]: # (![UML]&#40;http://plantuml.com/plantuml/png/5Sox3G8n303GdYbWWRYdEeaHcC0aLiueja_-mFfmrUlU5ecU9UjoO-sh1fMlwvvvn1t0yTicvrwl2l9kcgJPkWdmj3TFU99_o1-cOOj0C98S1kDq56d7-Mwau-yF&#41;)
-![UML](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/igojig/ServerConsole/master/diagram.puml)
+![UML](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/igojig/ServerConsole/master/github_assets/diagram.puml)
