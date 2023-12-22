@@ -1,4 +1,4 @@
-![Static Badge](https://img.shields.io/badge/Java-17%2B-blue)
+![Static Badge](https://img.shields.io/badge/Java-17-blue)
 ![Static Badge](https://img.shields.io/badge/Lombok-blue)
 ![Static Badge](https://img.shields.io/badge/Log4j-blue)
 ![Static Badge](https://img.shields.io/badge/Sqlite-blue)
@@ -11,7 +11,7 @@
 ## Функционал
 - аутентификация и регистрация клиентов
 - проверка от повторного входа
-- диспетчеризация сообщений от клиентов, в т.ч. приватных
+- диспетчеризация сообщений от клиентов
 - сохранение истории сообщений при выходе клиента
 - загрузка истории сообщение при входе клиента
 - изменение имени клиента
@@ -35,8 +35,6 @@ java -jar Server-jar-with-dependencies.jar
 ```
 или запуск из IDE
 
-### Связанный проект - [Клиентская часть](https://github.com/igojig/FxMessager_client)
-
 ## Настройки
 
 
@@ -45,9 +43,7 @@ ___
 ### <sup id="f1">1. отключение клиента на этапе процедуры логина/регистрации при неактивности в течении заданного времени</sup> 
 ```java
   public class ClientHandler{
-  ...
     public static final int WAIT_USER_AUTHORISATION_TIMEOUT = 60 * 1000;
-  ...
   }
 ```
 [⏎](#a1)
@@ -56,10 +52,10 @@ ___
 - [user.home]/chat_
 - [user.home]/chat_/history
 
-  | каталог                   | назначение                            |
-  |---------------------------|---------------------------------------|
-  | [user.home]/chat_         | лог;<br/>база данных(users.db);       |
-  | [user.home]/chat_/history | история клиентов в текстовом формате; |
+  | каталог                        | назначение                            |
+  |--------------------------------|---------------------------------------|
+  | `${env:user.home}/chat_`         | лог;<br/>база данных(users.db);       |
+  | `${env:user.home}/chat_/history` | история клиентов в текстовом формате; |
 ```java
 public class LocalFileService {
     public static final String USER_HOME_DIR_ENVIRONMENT_VARIABLE = "user.home";
@@ -78,6 +74,5 @@ public class ServerApp {
 [⏎](#a3)
 
 ### Диаграмма взаимодействия
+![diagramm](./github_assets/diagram-0.svg)
 
-[//]: # (![UML]&#40;http://plantuml.com/plantuml/png/5Sox3G8n303GdYbWWRYdEeaHcC0aLiueja_-mFfmrUlU5ecU9UjoO-sh1fMlwvvvn1t0yTicvrwl2l9kcgJPkWdmj3TFU99_o1-cOOj0C98S1kDq56d7-Mwau-yF&#41;)
-![UML](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/igojig/ServerConsole/master/github_assets/diagram.puml)

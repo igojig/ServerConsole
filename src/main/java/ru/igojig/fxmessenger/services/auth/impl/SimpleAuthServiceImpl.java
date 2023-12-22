@@ -6,9 +6,7 @@ import ru.igojig.fxmessenger.services.auth.AuthService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-/*
 
- */
 public class SimpleAuthServiceImpl implements AuthService {
 
     private static  List<User> clients;

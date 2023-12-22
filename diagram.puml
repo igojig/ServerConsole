@@ -3,22 +3,21 @@
 'https://plantuml.com/sequence-diagram
 
 autonumber
+
 box
-actor       JavaFX_client
+actor JavaFX_client
 end box
+
 JavaFX_client->Server:incoming connection
+
 box
 Server->ClientHandler: socket.accept()
-'activate ClientHandler
-'ClientHandler->Server: subscribe()
-'Server -> ClientHandler: subscribe()
 create control "read data\nfrom Socket" as thread
-'activate th
 ClientHandler->thread: create new thread
 JavaFX_client->thread: incoming message
 box List<Receivers> #LightBlue
 thread->Receivers: notifyReceiver()
-note right: Оповещение слушателей:\n AuthMessageReceiver\n ChangeUsernameReceiver\n PrivateMessageReceiver\n ClientMessageReceiver\n ExitClientReceiver\n StopServerReceiver\n HistoryRequestReceiver\n HistorySaveReceiver\n RequestUsersReceiver
+note right: Оповещение слушателей:\n  AuthMessageReceiver\n  ChangeUsernameReceiver\n  PrivateMessageReceiver\n  ClientMessageReceiver\n  ExitClientReceiver\n  StopServerReceiver\n  HistoryRequestReceiver\n  HistorySaveReceiver\n  RequestUsersReceiver
 
 endbox
 endbox

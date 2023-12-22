@@ -9,7 +9,7 @@ import java.nio.file.*;
 import java.util.stream.Stream;
 
 public class LocalFileService {
-    public static final String USER_HOME_DIR_ENVIRONMENT_VARIABLE = "user.home";
+    public static final String USER_HOMEDIR_ENVIRONMENT_VARIABLE = "user.home";
     public static final String STORAGE_DIR = "chat_";
     public static final String HISTORY_DIR = "history";
 
@@ -21,7 +21,7 @@ public class LocalFileService {
 
 
     public static void initStorage() {
-        String userDir = System.getProperty(USER_HOME_DIR_ENVIRONMENT_VARIABLE);
+        String userDir = System.getProperty(USER_HOMEDIR_ENVIRONMENT_VARIABLE);
         if (userDir == null) {
             logger.warn("Не удалось найти рабочий каталог пользователя");
             return;
